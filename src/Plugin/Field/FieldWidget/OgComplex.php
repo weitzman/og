@@ -29,6 +29,15 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   /**
    * {@inheritdoc}
    */
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+    $parent = parent::formElement($items, $delta, $element, $form, $form_state);
+    $parent['target_id']['#selection_handler'] = 'default:og';
+    return $parent;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state) {
     // todo: issue #2 in OG 8 issue queue.
     $elements = parent::formMultipleElements($items, $form, $form_state);
@@ -134,7 +143,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       'target_id' => [
         '#type' => "entity_autocomplete",
         '#target_type' => $this->fieldDefinition->getTargetEntityTypeId(),
-        '#selection_handler' => 'default:node',
+        '#selection_handler' => 'default:og',
         '#default_value' => $entity ? $entity : NULL,
       ],
       '_weight' => [
