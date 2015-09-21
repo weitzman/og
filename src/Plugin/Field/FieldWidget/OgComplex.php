@@ -7,6 +7,7 @@
 
 namespace Drupal\og\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteWidget;
 use Drupal\Core\Form\FormStateInterface;
@@ -32,6 +33,8 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     // todo: issue #2 in OG 8 issue queue.
     $elements = parent::formMultipleElements($items, $form, $form_state);
 
+    dpm($elements);
+
     return $elements;
   }
 
@@ -51,7 +54,9 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       return;
     }
 
-    $entity = entity_load($this->getFieldSetting('target_type'), $matches[1]);
+    $entity = \Drupal::entityManager()
+      ->getStorage($this->getFieldSetting('target_type'))
+      ->load($matches[1]);
 
     $params['%label'] = $entity->label();
 
@@ -84,7 +89,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    *   The widget array.
    */
   private function otherGroupsWidget(&$elements) {
-    // todo: check permission.
+    // @todo check permission.
     if ($this->fieldDefinition->getTargetEntityTypeId() == 'user') {
       $description = $this->t('As groups administrator, associate this user with groups you do <em>not</em> belong to.');
     }
@@ -92,10 +97,50 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       $description = $this->t('As groups administrator, associate this content with groups you do <em>not</em> belong to.');
     }
 
-    $elements['other_groups'] = [
-      '#type' => 'fieldset',
-      '#title' => t('Other groups'),
+    $elements = [
+      '#title' => $this->t('Other widgets'),
       '#description' => $description,
+      '#prefix' => '<div id="og-group-ref-other-groups">',
+      '#suffix' => '</div>',
+      '#cardinality' => -1,
+      '#cardinality_multiple' => 1,
+      '#theme' => 'field_multiple_value_form',
+    ];
+
+    $elements[] = $this->otherGroupsSingle();
+
+    $elements['add_more'] = [
+      '#type' => 'submit',
+      '#name' => 'og_group_ref_other_groups',
+      '#value' => $this->t('Add more'),
+      '#ajax' => [
+        'callback' => [$this, 'otherGroupsAddMoreAjax'],
+        'wrapper' => 'og-group-ref-other-groups',
+        'effect' => 'fade',
+      ],
+    ];
+  }
+
+  /**
+   * Generating other groups autocomplete element.
+   *
+   * @param EntityInterface|NULL $entity
+   *   The entity object.
+   * @return array
+   *   A single entity reference input.
+   */
+  public function otherGroupsSingle(EntityInterface $entity = NULL) {
+    return [
+      'target_id' => [
+        '#type' => "entity_autocomplete",
+        '#target_type' => $this->fieldDefinition->getTargetEntityTypeId(),
+        '#selection_handler' => 'default:node',
+        '#default_value' => $entity ? $entity : NULL,
+      ],
+      '_weight' => [
+        '#type' => 'weight',
+        '#title_display' => 'invisible',
+      ],
     ];
   }
 
