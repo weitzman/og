@@ -42,8 +42,6 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     // todo: issue #2 in OG 8 issue queue.
     $elements = parent::formMultipleElements($items, $form, $form_state);
 
-    dpm($elements);
-
     return $elements;
   }
 
@@ -87,7 +85,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    */
   public function form(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
     $parent_form = parent::form($items, $form, $form_state, $get_delta);
-    $this->otherGroupsWidget($parent_form['other_groups']);
+    $this->otherGroupsWidget($parent_form['other_groups'], $form_state);
     return $parent_form;
   }
 
@@ -97,7 +95,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * @param $elements
    *   The widget array.
    */
-  private function otherGroupsWidget(&$elements) {
+  private function otherGroupsWidget(&$elements, FormStateInterface $form_state) {
     // @todo check permission.
     if ($this->fieldDefinition->getTargetEntityTypeId() == 'user') {
       $description = $this->t('As groups administrator, associate this user with groups you do <em>not</em> belong to.');
@@ -111,19 +109,25 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       '#description' => $description,
       '#prefix' => '<div id="og-group-ref-other-groups">',
       '#suffix' => '</div>',
-      '#cardinality' => -1,
-      '#cardinality_multiple' => 1,
+      '#cardinality' => -1, // todo: check cardinality.
+      '#cardinality_multiple' => 1, // todo: check cardinality.
       '#theme' => 'field_multiple_value_form',
+      '#field_name' => $this->fieldDefinition->getName(),
     ];
 
     $elements[] = $this->otherGroupsSingle();
+
+    if ($form_state->getUserInput()['_triggering_element_name']) {
+      // figure out...
+      $elements[] = $this->otherGroupsSingle();
+    }
 
     $elements['add_more'] = [
       '#type' => 'submit',
       '#name' => 'og_group_ref_other_groups',
       '#value' => $this->t('Add more'),
       '#ajax' => [
-        'callback' => [$this, 'otherGroupsAddMoreAjax'],
+        'callback' => [$this, 'addMoreAjax'],
         'wrapper' => 'og-group-ref-other-groups',
         'effect' => 'fade',
       ],
@@ -151,6 +155,33 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
         '#title_display' => 'invisible',
       ],
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $parent_values = $values;
+
+    // Get the groups from the other groups widget.
+    foreach ($form[$this->fieldDefinition->getName()]['other_groups'] as $key => $value) {
+      if (!is_int($key)) {
+        continue;
+      }
+
+      preg_match("/.+\(([\w.]+)\)/", $value['target_id']['#value'], $matches);
+
+      if (empty($matches[1])) {
+        continue;
+      }
+
+      $parent_values[] = [
+        'target_id' => $matches[1],
+        '_weight' => $value['_weight']['#value'],
+        '_original_delta' => $value['_weight']['#delta'],
+      ];
+    }
+    return $parent_values;
   }
 
 }
