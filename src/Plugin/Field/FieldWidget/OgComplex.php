@@ -146,6 +146,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
         '#selection_handler' => 'default:og',
         '#default_value' => $entity ? $entity : NULL,
       ],
+      
       '_weight' => [
         '#type' => 'weight',
         '#title_display' => 'invisible',
