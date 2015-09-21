@@ -26,18 +26,6 @@ use Drupal\Core\Form\FormStateInterface;
 class OgComplex extends EntityReferenceAutocompleteWidget {
 
   /**
-   * The OG complex widget have a special logic on order to return the groups
-   * that user can reference to.
-   */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $return = parent::formElement($items, $delta, $element, $form, $form_state);
-
-    $return['target_id']['#autocomplete_route_name'] = 'og.entity_reference.autocomplete';
-
-    return $return;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state) {
@@ -79,4 +67,36 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
 
     // todo: Check the writing permission for the current user.
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function form(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
+    $parent_form = parent::form($items, $form, $form_state, $get_delta);
+    $this->otherGroupsWidget($parent_form['other_groups']);
+    return $parent_form;
+  }
+
+  /**
+   * Adding the other groups widget to the form.
+   *
+   * @param $elements
+   *   The widget array.
+   */
+  private function otherGroupsWidget(&$elements) {
+    // todo: check permission.
+    if ($this->fieldDefinition->getTargetEntityTypeId() == 'user') {
+      $description = $this->t('As groups administrator, associate this user with groups you do <em>not</em> belong to.');
+    }
+    else {
+      $description = $this->t('As groups administrator, associate this content with groups you do <em>not</em> belong to.');
+    }
+
+    $elements['other_groups'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Other groups'),
+      '#description' => $description,
+    ];
+  }
+
 }
