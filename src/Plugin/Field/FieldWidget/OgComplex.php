@@ -165,6 +165,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
         '#type' => "entity_autocomplete",
         '#target_type' => $this->fieldDefinition->getTargetEntityTypeId(),
         '#selection_handler' => 'default:og',
+        '#selection_settings' => ['other_groups' => TRUE],
         '#default_value' => $entity ? $entity : NULL,
       ],
       '_weight' => [

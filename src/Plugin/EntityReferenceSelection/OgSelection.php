@@ -39,6 +39,12 @@ class OgSelection extends SelectionBase {
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
     $query = parent::buildEntityQuery($match, $match_operator);
     $query->condition(OG_GROUP_FIELD, 1);
+
+    if ($this->configuration['handler_settings']['other_groups']) {
+      // todo: implement logic.
+      $query->condition('nid', 1);
+    }
+
     return $query;
   }
 
