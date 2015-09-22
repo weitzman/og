@@ -76,8 +76,6 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       $form_state->setError($element, t('The entity %label is not a group.', $params));
       return;
     }
-
-    // todo: Check the writing permission for the current user.
   }
 
   /**
@@ -112,8 +110,6 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       '#description' => $description,
       '#prefix' => '<div id="og-group-ref-other-groups">',
       '#suffix' => '</div>',
-      '#cardinality' => -1, // todo: check cardinality.
-      '#cardinality_multiple' => 1, // todo: check cardinality.
       '#theme' => 'field_multiple_value_form',
       '#field_name' => $this->fieldDefinition->getName(),
       '#max_delta' => 1,
