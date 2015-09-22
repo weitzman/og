@@ -107,6 +107,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
 
     $elements = [
       '#type' => 'container',
+      '#tree' => TRUE,
       '#title' => $this->t('Other widgets'),
       '#description' => $description,
       '#prefix' => '<div id="og-group-ref-other-groups">',
@@ -142,13 +143,11 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       // Increase the number of elements.
       $delta = $form_state->get('other_group_delta') + 1;
       $form_state->set('other_group_delta', $delta);
-      dpm($delta);
     }
 
     // Create partials from the last $start_key to the elements number.
-    for ($i = 0; $i <= $delta; $i++) {
-      dpm($elements[$i]);
-      $elements[$i] = $this->otherGroupsSingle($i, $start_key);
+    for ($i = 0; $i <= $form_state->get('other_group_delta'); $i++) {
+      $elements[$i] = $this->otherGroupsSingle($i);
     }
   }
 
@@ -160,7 +159,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * @return array
    *   A single entity reference input.
    */
-  public function otherGroupsSingle($max_delta, $delta, EntityInterface $entity = NULL) {
+  public function otherGroupsSingle($delta, EntityInterface $entity = NULL) {
     return [
       'target_id' => [
         '#type' => "entity_autocomplete",
@@ -171,6 +170,8 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       '_weight' => [
         '#type' => 'weight',
         '#title_display' => 'invisible',
+        '#delta' => $delta,
+        '#default_value' => $delta,
       ],
     ];
   }
