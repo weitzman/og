@@ -85,6 +85,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    */
   public function form(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
     $parent_form = parent::form($items, $form, $form_state, $get_delta);
+    $parent_form['other_groups'] = [];
     $this->otherGroupsWidget($parent_form['other_groups'], $form_state);
     return $parent_form;
   }
@@ -114,9 +115,41 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       '#cardinality_multiple' => 1, // todo: check cardinality.
       '#theme' => 'field_multiple_value_form',
       '#field_name' => $this->fieldDefinition->getName(),
+      '#max_delta' => 1,
     ];
 
-    $elements[] = $this->otherGroupsSingle();
+    $elements['add_more'] = array(
+      '#type' => 'button',
+      '#value' => t('Add another item'),
+      '#name' => 'add_another_group',
+      '#ajax' => array(
+        'callback' => array(get_class($this), 'addMoreAjax'),
+        'wrapper' => 'og-group-ref-other-groups',
+        'effect' => 'fade',
+      ),
+    );
+    $start_key = 0;
+    // todo: get the other groups.
+
+    if (!$form_state->get('other_group_delta')) {
+      $form_state->set('other_group_delta', $start_key);
+    }
+
+    // Get the trigger element and check if this the add another item button.
+    $trigger_element = $form_state->getTriggeringElement();
+
+    if ( $trigger_element['#name'] == 'add_another_group') {
+      // Increase the number of elements.
+      $delta = $form_state->get('other_group_delta') + 1;
+      $form_state->set('other_group_delta', $delta);
+      dpm($delta);
+    }
+
+    // Create partials from the last $start_key to the elements number.
+    for ($i = 0; $i <= $delta; $i++) {
+      dpm($elements[$i]);
+      $elements[$i] = $this->otherGroupsSingle($i, $start_key);
+    }
   }
 
   /**
@@ -127,7 +160,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * @return array
    *   A single entity reference input.
    */
-  public function otherGroupsSingle(EntityInterface $entity = NULL) {
+  public function otherGroupsSingle($max_delta, $delta, EntityInterface $entity = NULL) {
     return [
       'target_id' => [
         '#type' => "entity_autocomplete",
