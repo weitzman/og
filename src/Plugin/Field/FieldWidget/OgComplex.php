@@ -105,6 +105,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     }
 
     $elements = [
+      '#type' => 'container',
       '#title' => $this->t('Other widgets'),
       '#description' => $description,
       '#prefix' => '<div id="og-group-ref-other-groups">',
@@ -116,22 +117,6 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     ];
 
     $elements[] = $this->otherGroupsSingle();
-
-    if ($form_state->getUserInput()['_triggering_element_name']) {
-      // figure out...
-      $elements[] = $this->otherGroupsSingle();
-    }
-
-    $elements['add_more'] = [
-      '#type' => 'submit',
-      '#name' => 'og_group_ref_other_groups',
-      '#value' => $this->t('Add more'),
-      '#ajax' => [
-        'callback' => [$this, 'addMoreAjax'],
-        'wrapper' => 'og-group-ref-other-groups',
-        'effect' => 'fade',
-      ],
-    ];
   }
 
   /**
