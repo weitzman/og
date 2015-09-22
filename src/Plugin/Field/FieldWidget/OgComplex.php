@@ -31,18 +31,9 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $parent = parent::formElement($items, $delta, $element, $form, $form_state);
+    // todo: fix the definition in th UI level.
     $parent['target_id']['#selection_handler'] = 'default:og';
     return $parent;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state) {
-    // todo: issue #2 in OG 8 issue queue.
-    $elements = parent::formMultipleElements($items, $form, $form_state);
-
-    return $elements;
   }
 
   /**
@@ -83,7 +74,8 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    */
   public function form(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
     $parent_form = parent::form($items, $form, $form_state, $get_delta);
-    $parent_form['other_groups'] = [];
+
+    // Adding the other groups widget.
     $this->otherGroupsWidget($parent_form['other_groups'], $form_state);
     return $parent_form;
   }
@@ -115,16 +107,16 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       '#max_delta' => 1,
     ];
 
-    $elements['add_more'] = array(
+    $elements['add_more'] = [
       '#type' => 'button',
-      '#value' => t('Add another item'),
+      '#value' => $this->t('Add another item'),
       '#name' => 'add_another_group',
-      '#ajax' => array(
-        'callback' => array(get_class($this), 'addMoreAjax'),
+      '#ajax' => [
+        'callback' => [$this, 'addMoreAjax'],
         'wrapper' => 'og-group-ref-other-groups',
         'effect' => 'fade',
-      ),
-    );
+      ],
+    ];
     $start_key = 0;
     // todo: get the other groups.
 
@@ -136,12 +128,12 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $trigger_element = $form_state->getTriggeringElement();
 
     if ( $trigger_element['#name'] == 'add_another_group') {
-      // Increase the number of elements.
+      // Increase the number of other groups.
       $delta = $form_state->get('other_group_delta') + 1;
       $form_state->set('other_group_delta', $delta);
     }
 
-    // Create partials from the last $start_key to the elements number.
+    // Add another auto complete field.
     for ($i = 0; $i <= $form_state->get('other_group_delta'); $i++) {
       $elements[$i] = $this->otherGroupsSingle($i);
     }
@@ -150,6 +142,9 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   /**
    * Generating other groups autocomplete element.
    *
+   * @param $delta
+   *   The delta of the new element. Need to be the last delta in order to be
+   *   added in the end of the list.
    * @param EntityInterface|NULL $entity
    *   The entity object.
    * @return array
@@ -160,6 +155,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       'target_id' => [
         '#type' => "entity_autocomplete",
         '#target_type' => $this->fieldDefinition->getTargetEntityTypeId(),
+        // todo: fix the definition in th UI level.
         '#selection_handler' => 'default:og',
         '#selection_settings' => ['other_groups' => TRUE],
         '#default_value' => $entity ? $entity : NULL,
