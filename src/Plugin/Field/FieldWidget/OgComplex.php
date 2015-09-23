@@ -9,6 +9,7 @@ namespace Drupal\og\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteWidget;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -107,6 +108,8 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       '#description' => $description,
       '#prefix' => '<div id="og-group-ref-other-groups">',
       '#suffix' => '</div>',
+      '#cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
+      '#cardinality_multiple' => TRUE,
       '#theme' => 'field_multiple_value_form',
       '#field_name' => $this->fieldDefinition->getName(),
       '#max_delta' => 1,
