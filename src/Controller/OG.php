@@ -231,4 +231,86 @@ class OG {
   public static function MembershipDefault() {
     return array('type' => 'og_membership_type_default');
   }
+
+  /**
+   * Get the groups an entity is associated with.
+   *
+   * @param $entity_type
+   *   The entity type. Defaults to 'user'
+   * @param $entity
+   *   (optional) The entity object or entity ID. If empty, and $entity_type is
+   *   "user", the current user will be used.
+   * @param $states
+   *   (optional) Array with the state to return. Defaults to active.
+   * @param $field_name
+   *   (optional) The field name associated with the group.
+   *
+   * @return array
+   *  An array with the group's entity type as the key, and array - keyed by
+   *  the OG membership ID and the group ID as the value. If nothing found,
+   *  then an empty array.
+   */
+  public static function getEntityGroups($entity_type = 'user', $entity = NULL, $states = array(OG_STATE_ACTIVE), $field_name = NULL) {
+    $cache = &drupal_static(__FUNCTION__, array());
+
+    if ($entity_type == 'user' && empty($entity)) {
+      global $user;
+      $entity = clone $user;
+    }
+    if (is_object($entity)) {
+      // Get the entity ID.
+      list($id) = entity_extract_ids($entity_type, $entity);
+    }
+    else {
+      $id = $entity;
+    }
+
+    // Get a string identifier of the states, so we can retrieve it from cache.
+    if ($states) {
+      sort($states);
+      $state_identifier = implode(':', $states);
+    }
+    else {
+      $state_identifier = FALSE;
+    }
+
+    $identifier = array(
+      $entity_type,
+      $id,
+      $state_identifier,
+      $field_name,
+    );
+
+    $identifier = implode(':', $identifier);
+
+    if (isset($cache[$identifier])) {
+      // Return cached values.
+      return $cache[$identifier];
+    }
+
+    $cache[$identifier] = array();
+
+    $query = db_select('og_membership', 'ogm')
+      ->fields('ogm', array('id', 'gid', 'group_type'))
+      ->condition('entity_type', $entity_type)
+      ->condition('etid', $id);
+
+    if ($states) {
+      $query->condition('state', $states, 'IN');
+    }
+
+    if ($field_name) {
+      $query->condition('field_name', $field_name);
+    }
+
+    $result = $query
+      ->execute()
+      ->fetchAll();
+
+    foreach ($result as $row) {
+      $cache[$identifier][$row->group_type][$row->id] = $row->gid;
+    }
+
+    return [];
+  }
 }

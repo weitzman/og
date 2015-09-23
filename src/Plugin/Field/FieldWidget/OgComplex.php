@@ -75,6 +75,8 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   public function form(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
     $parent_form = parent::form($items, $form, $form_state, $get_delta);
 
+    $parent_form['other_groups'] = [];
+
     // Adding the other groups widget.
     $this->otherGroupsWidget($parent_form['other_groups'], $form_state);
     return $parent_form;
