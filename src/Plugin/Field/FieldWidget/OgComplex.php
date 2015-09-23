@@ -12,6 +12,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteWidget;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\og\Controller\OG;
 
 /**
  * Plugin implementation of the 'entity_reference autocomplete' widget.
@@ -127,8 +128,13 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
         'effect' => 'fade',
       ],
     ];
+
     $start_key = 0;
-    // todo: get the other groups.
+    $other_groups = OG::getEntityGroups();
+    foreach ($other_groups as $other_group) {
+      $this->otherGroupsSingle($start_key, $other_group);
+      $start_key++;
+    }
 
     if (!$form_state->get('other_group_delta')) {
       $form_state->set('other_group_delta', $start_key);
@@ -168,7 +174,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
         // todo: fix the definition in th UI level.
         '#selection_handler' => 'default:og',
         '#selection_settings' => ['other_groups' => TRUE],
-        '#default_value' => $entity ? $entity : NULL,
+        '#default_value' => $entity,
       ],
       '_weight' => [
         '#type' => 'weight',

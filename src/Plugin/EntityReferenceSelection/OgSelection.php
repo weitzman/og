@@ -41,8 +41,6 @@ class OgSelection extends SelectionBase {
     $query->condition(OG_GROUP_FIELD, 1);
 
     if ($this->configuration['handler_settings']['other_groups']) {
-      // todo: implement logic.
-      $query->condition('nid', 1);
     }
 
     return $query;
