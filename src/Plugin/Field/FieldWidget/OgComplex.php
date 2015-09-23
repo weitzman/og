@@ -101,12 +101,14 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       $description = $this->t('As groups administrator, associate this content with groups you do <em>not</em> belong to.');
     }
 
+    $field_wrapper = str_replace('_', '-', $this->fieldDefinition->getName()) . '-add-another-group';
+
     $elements = [
       '#type' => 'container',
       '#tree' => TRUE,
       '#title' => $this->t('Other widgets'),
       '#description' => $description,
-      '#prefix' => '<div id="og-group-ref-other-groups">',
+      '#prefix' => '<div id="' . $field_wrapper . '">',
       '#suffix' => '</div>',
       '#cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
       '#cardinality_multiple' => TRUE,
@@ -121,7 +123,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       '#name' => 'add_another_group',
       '#ajax' => [
         'callback' => [$this, 'addMoreAjax'],
-        'wrapper' => 'og-group-ref-other-groups',
+        'wrapper' => $field_wrapper,
         'effect' => 'fade',
       ],
     ];
