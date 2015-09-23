@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityType;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\og\Entity\OgMembership;
@@ -254,12 +255,12 @@ class OG {
     $cache = &drupal_static(__FUNCTION__, array());
 
     if ($entity_type == 'user' && empty($entity)) {
-      global $user;
-      $entity = clone $user;
+      $account = \Drupal::currentUser()->getAccount();
+      $entity = $account->id();
     }
-    if (is_object($entity)) {
+    if ($entity instanceof AccountInterface) {
       // Get the entity ID.
-      list($id) = entity_extract_ids($entity_type, $entity);
+      $id = $entity->id();
     }
     else {
       $id = $entity;
@@ -289,11 +290,9 @@ class OG {
     }
 
     $cache[$identifier] = array();
-
-    $query = db_select('og_membership', 'ogm')
-      ->fields('ogm', array('id', 'gid', 'group_type'))
+    $query = \Drupal::entityQuery('og_membership')
       ->condition('entity_type', $entity_type)
-      ->condition('etid', $id);
+      ->condition('id', $id);
 
     if ($states) {
       $query->condition('state', $states, 'IN');
@@ -303,14 +302,13 @@ class OG {
       $query->condition('field_name', $field_name);
     }
 
-    $result = $query
-      ->execute()
-      ->fetchAll();
+    $results = $query
+      ->execute();
 
-    foreach ($result as $row) {
+    foreach ($results as $row) {
       $cache[$identifier][$row->group_type][$row->id] = $row->gid;
     }
 
-    return [];
+    return $cache[$identifier];
   }
 }
