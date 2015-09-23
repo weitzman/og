@@ -87,7 +87,10 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    *   The widget array.
    */
   private function otherGroupsWidget(&$elements, FormStateInterface $form_state) {
-    // @todo check permission.
+    if (!\Drupal::currentUser()->hasPermission('administer groups')) {
+      return;
+    }
+
     if ($this->fieldDefinition->getTargetEntityTypeId() == 'user') {
       $description = $this->t('As groups administrator, associate this user with groups you do <em>not</em> belong to.');
     }
@@ -140,7 +143,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   }
 
   /**
-   * Generating other groups autocomplete element.
+   * Generating other groups auto complete element.
    *
    * @param $delta
    *   The delta of the new element. Need to be the last delta in order to be
