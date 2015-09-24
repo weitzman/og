@@ -91,7 +91,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * @param $elements
    *   The widget array.
    */
-  private function otherGroupsWidget(&$elements, FormStateInterface $form_state) {
+  protected function otherGroupsWidget(&$elements, FormStateInterface $form_state) {
     if (!\Drupal::currentUser()->hasPermission('administer groups')) {
       return;
     }
