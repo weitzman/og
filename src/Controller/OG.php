@@ -292,7 +292,7 @@ class OG {
     $cache[$identifier] = array();
     $query = \Drupal::entityQuery('og_membership')
       ->condition('entity_type', $entity_type)
-      ->condition('id', $id);
+      ->condition('etid', $id);
 
     if ($states) {
       $query->condition('state', $states, 'IN');
@@ -311,7 +311,7 @@ class OG {
       ->loadMultiple($results);
 
     foreach ($memberships as $membership) {
-      $cache[$identifier][$membership->getGroupType()][$membership->id()] = $membership->getGid();
+      $cache[$identifier][$membership->getGroupType()][$membership->id()] = $membership->getGroup();
     }
 
     return $cache[$identifier];

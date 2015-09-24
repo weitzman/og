@@ -132,7 +132,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
 
     $start_key = 0;
     $other_groups = OG::getEntityGroups();
-    foreach ($other_groups as $other_group) {
+    foreach ($other_groups[$this->fieldDefinition->getTargetEntityTypeId()] as $other_group) {
       $this->otherGroupsSingle($start_key, $other_group);
       $start_key++;
     }

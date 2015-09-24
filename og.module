@@ -113,7 +113,7 @@ function og_entity_insert(ContentEntityInterface $entity) {
     $membership = OgMembership::create(array('type' => OG_MEMBERSHIP_TYPE_DEFAULT));
     $membership
       ->setEntityId($entity->get('uid')->offsetGet(0)->getValue()['target_id'])
-      ->setEntityType('user')
+      ->setEntityType($entity->getEntityTypeId())
       ->setGid($entity->id())
       ->setGroupType('user')
       // todo: get the real name of the field.
