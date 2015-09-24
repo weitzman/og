@@ -112,10 +112,10 @@ function og_entity_insert(ContentEntityInterface $entity) {
     // Subscribe the group manager.
     $membership = OgMembership::create(array('type' => OG_MEMBERSHIP_TYPE_DEFAULT));
     $membership
-      ->setEntityId($entity->get('uid')->getValue())
+      ->setEntityId($entity->get('uid')->offsetGet(0)->getValue()['target_id'])
       ->setEntityType('user')
       ->setGid($entity->id())
-      ->setEntityType('user')
+      ->setGroupType('user')
       // todo: get the real name of the field.
       ->setFieldName(OG_AUDIENCE_FIELD)
       ->save();
