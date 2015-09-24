@@ -8,6 +8,7 @@
 namespace Drupal\og\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\SelectionBase;
+use Drupal\og\Controller\OG;
 
 /**
  * Provide default OG selection handler.
@@ -41,6 +42,15 @@ class OgSelection extends SelectionBase {
     $query->condition(OG_GROUP_FIELD, 1);
 
     if ($this->configuration['handler_settings']['other_groups']) {
+      $ids = [];
+      $settings = $this->configuration['handler_settings'];
+      $other_groups = OG::getEntityGroups('user', NULL, [OG_STATE_ACTIVE], $settings['field_name']);
+
+      foreach ($other_groups[$settings['entity_type']] as $group) {
+        $ids[] = $group->id();
+      }
+
+      $query->condition(\Drupal::entityManager()->getDefinition($settings['entity_type'])->getKey('id'), $ids, 'IN');
     }
 
     return $query;
