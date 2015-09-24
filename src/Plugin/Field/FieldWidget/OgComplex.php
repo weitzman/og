@@ -7,6 +7,7 @@
 
 namespace Drupal\og\Plugin\Field\FieldWidget;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -102,12 +103,12 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       $description = $this->t('As groups administrator, associate this content with groups you do <em>not</em> belong to.');
     }
 
-    $field_wrapper = str_replace('_', '-', $this->fieldDefinition->getName()) . '-add-another-group';
+    $field_wrapper = Html::getClass($this->fieldDefinition->getName()) . '-add-another-group';
 
     $elements = [
       '#type' => 'container',
       '#tree' => TRUE,
-      '#title' => $this->t('Other widgets'),
+      '#title' => $this->t('Other groups'),
       '#description' => $description,
       '#prefix' => '<div id="' . $field_wrapper . '">',
       '#suffix' => '</div>',

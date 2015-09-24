@@ -305,8 +305,13 @@ class OG {
     $results = $query
       ->execute();
 
-    foreach ($results as $row) {
-      $cache[$identifier][$row->group_type][$row->id] = $row->gid;
+    /** @var OgMembership[] $memberships */
+    $memberships = \Drupal::entityManager()
+      ->getStorage('og_membership')
+      ->loadMultiple($results);
+
+    foreach ($memberships as $membership) {
+      $cache[$identifier][$membership->getGroupType()][$membership->id()] = $membership->getGid();
     }
 
     return $cache[$identifier];
