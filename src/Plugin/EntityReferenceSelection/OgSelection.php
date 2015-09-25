@@ -7,6 +7,7 @@
 
 namespace Drupal\og\Plugin\EntityReferenceSelection;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\SelectionBase;
 use Drupal\og\Controller\OG;
 
@@ -22,6 +23,8 @@ use Drupal\og\Controller\OG;
  * )
  */
 class OgSelection extends SelectionBase {
+
+  private $targetType;
 
   /**
    * Overrides the basic entity query object. Return only group in the matching
@@ -39,16 +42,58 @@ class OgSelection extends SelectionBase {
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
     $query = parent::buildEntityQuery($match, $match_operator);
-    $query->condition(OG_GROUP_FIELD, 1);
-
     $identifier_key = \Drupal::entityManager()->getDefinition($this->configuration['target_type'])->getKey('id');
+    $this->targetType = $this->configuration['target_type'];
     $user_groups = $this->getUserGroups();
 
-    if ($this->configuration['handler_settings']['other_groups']) {
-      $query->condition($identifier_key, $user_groups, 'IN');
+    $query->condition(OG_GROUP_FIELD, 1);
+
+    if ($this->configuration['handler_settings']['other_groups'] && $user_groups) {
+      $ids = [];
+
+      // Don't include the groups, the user doesn't have create permission.
+      foreach ($user_groups as $delta => $group) {
+        if ($group->access('create')) {
+          $ids[] = $group->id();
+        }
+      }
+
+      if ($ids) {
+        $query->condition($identifier_key, $ids, 'IN');
+      }
     }
     else {
-
+//      if ($user_groups && !empty($this->instance) && $this->instance['entity_type'] == 'node') {
+//        // Determine which groups should be selectable.
+//        $node = $this->entity;
+//        $node_type = $this->instance['bundle'];
+//        $ids = array();
+//        foreach ($user_groups as $gid) {
+//          // Check if user has "create" permissions on those groups.
+//          // If the user doesn't have create permission, check if perhaps the
+//          // content already exists and the user has edit permission.
+//          if (og_user_access($group_type, $gid, "create $node_type content")) {
+//            $ids[] = $gid;
+//          }
+//          elseif (!empty($node->nid) && (og_user_access($group_type, $gid, "update any $node_type content") || ($user->uid == $node->uid && og_user_access($group_type, $gid, "update own $node_type content")))) {
+//            $node_groups = isset($node_groups) ? $node_groups : og_get_entity_groups('node', $node->nid);
+//            if (in_array($gid, $node_groups[$group_type])) {
+//              $ids[] = $gid;
+//            }
+//          }
+//        }
+//      }
+//      else {
+//        $ids = $user_groups;
+//      }
+//      if ($ids) {
+//        $query->propertyCondition($entity_info['entity keys']['id'], $ids, 'IN');
+//      }
+//      else {
+//        // User doesn't have permission to select any group so falsify this
+//        // query.
+//        $query->propertyCondition($entity_info['entity keys']['id'], -1, '=');
+//      }
     }
 
     return $query;
@@ -57,17 +102,11 @@ class OgSelection extends SelectionBase {
   /**
    * Get the user's groups.
    *
-   * @return array
+   * @return ContentEntityInterface[]
    */
   private function getUserGroups() {
-    $ids = [];
     $other_groups = OG::getEntityGroups('user');
-
-    foreach ($other_groups[$this->configuration['target_type']] as $group) {
-      $ids[] = $group->id();
-    }
-
-    return $ids;
+    return $other_groups[$this->configuration['target_type']];
   }
 
 }
