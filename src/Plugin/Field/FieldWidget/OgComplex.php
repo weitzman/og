@@ -133,7 +133,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $start_key = 0;
     $other_groups = OG::getEntityGroups();
     foreach ($other_groups[$this->fieldDefinition->getTargetEntityTypeId()] as $other_group) {
-      $this->otherGroupsSingle($start_key, $other_group);
+      $elements[$start_key] = $this->otherGroupsSingle($start_key, $other_group);
       $start_key++;
     }
 
@@ -151,7 +151,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     }
 
     // Add another auto complete field.
-    for ($i = 0; $i <= $form_state->get('other_group_delta'); $i++) {
+    for ($i = $start_key; $i <= $form_state->get('other_group_delta'); $i++) {
       $elements[$i] = $this->otherGroupsSingle($i);
     }
   }
@@ -170,7 +170,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   public function otherGroupsSingle($delta, EntityInterface $entity = NULL) {
     return [
       'target_id' => [
-        '#type' => "entity_autocomplete",
+        '#type' => 'entity_autocomplete',
         '#target_type' => $this->fieldDefinition->getTargetEntityTypeId(),
         // todo: fix the definition in th UI level.
         '#selection_handler' => 'default:og',
