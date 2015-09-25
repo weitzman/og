@@ -41,17 +41,16 @@ class OgSelection extends SelectionBase {
     $query = parent::buildEntityQuery($match, $match_operator);
     $query->condition(OG_GROUP_FIELD, 1);
 
-    if ($this->configuration['handler_settings']['other_groups']) {
-      $ids = [];
-      $settings = $this->configuration['handler_settings'];
-      $other_groups = OG::getEntityGroups('user', NULL, [OG_STATE_ACTIVE], $settings['field_name']);
+    $ids = [];
+    $other_groups = OG::getEntityGroups('user');
 
-      foreach ($other_groups[$settings['entity_type']] as $group) {
-        $ids[] = $group->id();
-      }
-
-      $query->condition(\Drupal::entityManager()->getDefinition($settings['entity_type'])->getKey('id'), $ids, 'IN');
+    foreach ($other_groups[$this->configuration['target_type']] as $group) {
+      $ids[] = $group->id();
     }
+
+    $operator = $this->configuration['handler_settings']['other_groups'] ? 'IN' : 'NOT IN';
+
+    $query->condition(\Drupal::entityManager()->getDefinition($this->configuration['target_type'])->getKey('id'), $ids, $operator);
 
     return $query;
   }
