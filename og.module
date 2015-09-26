@@ -102,7 +102,7 @@ function og_entity_access(EntityInterface $entity, $operation, AccountInterface 
 /**
  * Implements hook_entity_insert().
  */
-function og_entity_insert(ContentEntityInterface $entity) {
+function og_entity_insert(EntityInterface $entity) {
   if (!OG::IsGroup($entity)) {
     return;
   }

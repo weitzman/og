@@ -7,6 +7,8 @@
 
 namespace Drupal\og\Tests;
 
+use Drupal\node\NodeInterface;
+use Drupal\og\Controller\OG;
 use Drupal\simpletest\WebTestBase;
 
 /**
@@ -19,7 +21,17 @@ abstract class OgTestBase extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = ['og'];
+  public static $modules = ['og', 'node'];
+
+  /**
+   * @var NodeInterface
+   */
+  protected $groupNodeType;
+
+  /**
+   * @var NodeInterface
+   */
+  protected $groupContentNodeType;
 
   /**
    * {@inheritdoc}
@@ -27,7 +39,13 @@ abstract class OgTestBase extends WebTestBase {
   protected function setUp() {
     parent::setUp();
 
-    // todo: set up things.
+    // Creating the content type.
+    $this->groupNodeType = $this->drupalCreateContentType();
+    $this->groupContentNodeType = $this->drupalCreateContentType();
+
+    // Define content type as group and group content.
+    OG::CreateField(OG_GROUP_FIELD, 'node', $this->groupNodeType->id());
+    OG::CreateField(OG_AUDIENCE_FIELD, 'node', $this->groupNodeType->id());
   }
 
 }
