@@ -109,40 +109,4 @@ class OgSelection extends SelectionBase {
     return $other_groups[$this->configuration['target_type']];
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function validateAutocompleteInput($input, &$element, FormStateInterface $form_state, $form, $strict = TRUE) {
-    $bundled_entities = $this->getReferenceableEntities($input, '=', 6);
-    $entities = array();
-    foreach ($bundled_entities as $entities_list) {
-      $entities += $entities_list;
-    }
-    if ($error = $this->elementValidate($entities)) {
-      $form_state->setError($element, $error);
-    }
-  }
-
-  /**
-   * Verifying the given entity IDs are
-   */
-  public function elementValidate($ids) {
-    /** @var ContentEntityBase[] $entities */
-    $entities = \Drupal::entityManager()
-      ->getStorage($this->configuration['target_type'])
-      ->loadMultiple($ids);
-
-    foreach ($entities as $entity) {
-      $params['%label'] = $entity->label();
-
-      if (!$entity->hasField(OG_GROUP_FIELD)) {
-        return $this->t('The entity %label is not defined as a group.', $params);
-      }
-
-      if (!$entity->get(OG_GROUP_FIELD)->value) {
-        return $this->t('The entity %label is not a group.', $params);
-      }
-    }
-  }
-
 }
