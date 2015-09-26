@@ -164,7 +164,7 @@ function _og_modules_uninstalled($modules) {
 /**
  * Implements hook_og_permission().
  *
- * Set as a yml service.
+ * todo: Set as a yml service.
  */
 function _og_og_permission() {
   // Generate standard node permissions for all applicable node types.
