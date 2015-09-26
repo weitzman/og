@@ -4,7 +4,6 @@
  * @file
  * Enable users to create and manage groups with roles and permissions.
  */
-use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\og\Controller\OG;
@@ -523,7 +522,7 @@ function _og_form_group_manager_validate($form, &$form_state) {
  */
 function _og_entity_insert($entity, $entity_type) {
   if (!og_is_group($entity_type, $entity)) {
-        return;
+    return;
   }
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   if (!empty($entity->uid)) {
