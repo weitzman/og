@@ -532,9 +532,9 @@ function _og_entity_insert($entity, $entity_type) {
     // Assign roles to group manager.
     $name = 'og_group_manager_default_rids_' . $entity_type . '_' . $bundle;
     if ($rids = variable_get($name)) {
-        foreach ($rids as $rid) {
-           og_role_grant($entity_type, $id, $entity->uid, $rid);
-          }
+      foreach ($rids as $rid) {
+        og_role_grant($entity_type, $id, $entity->uid, $rid);
+      }
     }
   }
   if (!og_is_group_default_access($entity_type, $entity)) {

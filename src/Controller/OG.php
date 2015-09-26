@@ -231,5 +231,4 @@ class OG {
   public static function MembershipDefault() {
     return array('type' => 'og_membership_type_default');
   }
-
 }

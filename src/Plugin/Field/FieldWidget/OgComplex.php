@@ -43,6 +43,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   public function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state) {
     // todo: issue #2 in OG 8 issue queue.
     $elements = parent::formMultipleElements($items, $form, $form_state);
+
     return $elements;
   }
 
@@ -51,7 +52,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * there is another validation: check if the given entities are groups.
    *
    * A user can change the ID in the brackets easily and reference the group
-   * content to a non-group entity
+   * content to a non-group entity.
    */
   public function elementValidate($element, FormStateInterface $form_state, $form) {
     parent::elementValidate($element, $form_state, $form);
@@ -76,7 +77,6 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       return;
     }
 
-    // todo: Check the writing permission for the current user
+    // todo: Check the writing permission for the current user.
   }
-
 }
