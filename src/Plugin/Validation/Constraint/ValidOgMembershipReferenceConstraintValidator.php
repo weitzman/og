@@ -9,6 +9,7 @@ namespace Drupal\og\Plugin\Validation\Constraint;
 
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\og\Og;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
@@ -38,7 +39,7 @@ class ValidOgMembershipReferenceConstraintValidator extends ConstraintValidator 
 
     $params['%label'] = $entity->label();
 
-    if (!$entity->hasField(OG_GROUP_FIELD)) {
+    if (!Og::isGroup($entity->getEntityTypeId(), $entity->bundle())) {
       $this->context->addViolation($this->t($constraint->NotValidGroup, $params));
       return;
     }

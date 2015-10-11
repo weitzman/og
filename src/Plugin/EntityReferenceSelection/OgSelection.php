@@ -8,8 +8,8 @@
 namespace Drupal\og\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\Plugin\EntityReferenceSelection\SelectionBase;
-use Drupal\og\Controller\OG;
+use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
+use Drupal\og\Og;
 
 /**
  * Provide default OG selection handler.
@@ -22,7 +22,7 @@ use Drupal\og\Controller\OG;
  *   weight = 1
  * )
  */
-class OgSelection extends SelectionBase {
+class OgSelection extends DefaultSelection {
 
   private $targetType;
 
@@ -45,16 +45,17 @@ class OgSelection extends SelectionBase {
     $identifier_key = \Drupal::entityManager()->getDefinition($this->configuration['target_type'])->getKey('id');
     $this->targetType = $this->configuration['target_type'];
     $user_groups = $this->getUserGroups();
+    $groups = Og::groupManager()->getAllGroups($this->configuration['target_type']);
 
-    $query->condition(OG_GROUP_FIELD, 1);
+    $query->condition('type', $groups, 'IN');
 
     if (!$user_groups) {
       return $query;
     }
 
-    if ($this->configuration['handler_settings']['other_groups']) {
-      $ids = [];
+    $ids = [];
 
+    if ($this->configuration['handler_settings']['other_groups']) {
       // Don't include the groups, the user doesn't have create permission.
       foreach ($user_groups as $delta => $group) {
         if ($group->access('create')) {
@@ -68,7 +69,6 @@ class OgSelection extends SelectionBase {
     }
     else {
       // Determine which groups should be selectable.
-      $ids = array();
       foreach ($user_groups as $group) {
         // Check if user has "create" permissions on those groups.
         // If the user doesn't have create permission, check if perhaps the
@@ -103,7 +103,7 @@ class OgSelection extends SelectionBase {
    * @return ContentEntityInterface[]
    */
   private function getUserGroups() {
-    $other_groups = OG::getEntityGroups('user');
+    $other_groups = \Drupal\og\Controller\OG::getEntityGroups('user');
     return $other_groups[$this->configuration['target_type']];
   }
 

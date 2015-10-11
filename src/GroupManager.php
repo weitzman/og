@@ -77,12 +77,12 @@ class GroupManager {
    *
    * @return array
    */
-  public function getAllGroups() {
+  public function getAllGroups($entity_type = NULL) {
     if (!isset($this->groupMap)) {
       $this->refreshGroupMap();
     }
 
-    return $this->groupMap;
+    return $entity_type ? $this->groupMap[$entity_type] : $this->groupMap;
   }
 
   /**
