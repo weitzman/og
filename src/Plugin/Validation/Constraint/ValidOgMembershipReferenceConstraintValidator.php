@@ -18,8 +18,6 @@ use Symfony\Component\Validator\ConstraintValidator;
  */
 class ValidOgMembershipReferenceConstraintValidator extends ConstraintValidator {
 
-  use StringTranslationTrait;
-
   /**
    * {@inheritdoc}
    */
@@ -34,6 +32,8 @@ class ValidOgMembershipReferenceConstraintValidator extends ConstraintValidator 
       ->load($value->get('target_id')->getValue());
 
     if (!$entity) {
+      // Entity with that entity ID does not exists. This could happens when the
+      // user pass a bad value deliberately which can cause a fatal error.
       return;
     }
 

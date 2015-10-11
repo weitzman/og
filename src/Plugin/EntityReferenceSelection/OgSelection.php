@@ -42,12 +42,8 @@ class OgSelection extends DefaultSelection {
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
     $query = parent::buildEntityQuery($match, $match_operator);
-    $identifier_key = \Drupal::entityManager()->getDefinition($this->configuration['target_type'])->getKey('id');
-    $this->targetType = $this->configuration['target_type'];
-    $user_groups = $this->getUserGroups();
-    $groups = Og::groupManager()->getAllGroupsBundles($this->configuration['target_type']);
-
-    $query->condition('type', $groups, 'IN');
+    list($identifier_key, $this->targetType, $user_groups, $bundles) = $this->getVariables();
+    $query->condition('type', $bundles, 'IN');
 
     if (!$user_groups) {
       return $query;
@@ -88,6 +84,20 @@ class OgSelection extends DefaultSelection {
     }
 
     return $query;
+  }
+
+  /**
+   * Return an array with needed values for the selection handler.
+   *
+   * @return array
+   */
+  private function getVariables() {
+    return [
+      \Drupal::entityManager()->getDefinition($this->configuration['target_type'])->getKey('id'),
+      $this->configuration['target_type'],
+      $this->getUserGroups(),
+      Og::groupManager()->getAllGroupsBundles($this->configuration['target_type'])
+    ];
   }
 
   /**
