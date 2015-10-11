@@ -35,6 +35,8 @@ class OgSelection extends DefaultSelection {
   protected $account;
 
   /**
+   * Get the current account.
+   *
    * @return AccountInterface
    */
   public function getAccount() {
@@ -45,6 +47,8 @@ class OgSelection extends DefaultSelection {
   }
 
   /**
+   * Set the current object account.
+   *
    * @param AccountInterface $account
    */
   public function setAccount(AccountInterface $account) {
@@ -91,9 +95,9 @@ class OgSelection extends DefaultSelection {
     else {
       // Determine which groups should be selectable.
       foreach ($user_groups as $group) {
-        // Check if user has "create" permissions on those groups.
-        // If the user doesn't have create permission, check if perhaps the
-        // content already exists and the user has edit permission.
+        // Check if user has "create" permissions on those groups. If the user
+        // doesn't have create permission, check if perhaps the content already
+        // exists and the user has edit permission.
         if ($group->access('create')) {
           $ids[] = $group->id();
         }
