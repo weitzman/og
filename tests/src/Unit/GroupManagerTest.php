@@ -46,9 +46,9 @@ class GroupManagerTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::getAllGroups
+   * @covers ::GetAllGroupBundles
    */
-  public function testGetAllGroups() {
+  public function testGetAllGroupBundles() {
     $groups = ['test_entity' => ['a', 'b']];
 
     $this->configProphecy->get('groups')
