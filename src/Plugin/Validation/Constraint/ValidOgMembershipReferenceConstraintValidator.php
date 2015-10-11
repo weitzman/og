@@ -41,7 +41,6 @@ class ValidOgMembershipReferenceConstraintValidator extends ConstraintValidator 
 
     if (!Og::isGroup($entity->getEntityTypeId(), $entity->bundle())) {
       $this->context->addViolation($constraint->NotValidGroup, $params);
-      return;
     }
   }
 }
