@@ -23,7 +23,6 @@ before_script:
   - cd ..
 
   # Update composer and drush.
-  - sudo apt-get update & /dev/null
   - composer self-update
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - composer global require drush/drush:dev-master
