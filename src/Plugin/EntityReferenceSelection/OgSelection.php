@@ -9,6 +9,7 @@ namespace Drupal\og\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\og\Og;
 
 /**
@@ -25,6 +26,30 @@ use Drupal\og\Og;
 class OgSelection extends DefaultSelection {
 
   private $targetType;
+
+  /**
+   * @var AccountInterface
+   *
+   * The current user object.
+   */
+  protected $account;
+
+  /**
+   * @return AccountInterface
+   */
+  public function getAccount() {
+    if (empty($this->account)) {
+      $this->setAccount(\Drupal::currentUser()->getAccount());
+    }
+    return $this->account;
+  }
+
+  /**
+   * @param AccountInterface $account
+   */
+  public function setAccount(AccountInterface $account) {
+    $this->account = $account;
+  }
 
   /**
    * Overrides the basic entity query object. Return only group in the matching
@@ -106,7 +131,7 @@ class OgSelection extends DefaultSelection {
    * @return ContentEntityInterface[]
    */
   private function getUserGroups() {
-    $other_groups = \Drupal\og\Controller\OG::getEntityGroups('user');
+    $other_groups = \Drupal\og\Controller\OG::getEntityGroups('user', $this->getAccount());
     return $other_groups[$this->configuration['target_type']];
   }
 
