@@ -121,20 +121,6 @@ class OG {
   }
 
   /**
-   * Check if the given entity is a group.
-   *
-   * @param EntityInterface $entity
-   *   The entity object.
-   *
-   * @return bool
-   *   True or false if the given entity is group.
-   */
-  public static function IsGroup(EntityInterface $entity) {
-    $definition = \Drupal::entityManager()->getDefinition($entity->getEntityTypeId());
-    return $definition instanceof ContentEntityType && $entity->hasField(OG_GROUP_FIELD);
-  }
-
-  /**
    * Check if the given entity is a group content.
    *
    * @param EntityInterface $entity
@@ -239,7 +225,7 @@ class OG {
     $memberships = \Drupal::entityManager()
       ->getStorage('og_membership')
       ->loadMultiple($results);
-    
+
     foreach ($memberships as $membership) {
       $cache[$identifier][$membership->getGroupType()][$membership->id()] = $membership->getGroup();
     }
