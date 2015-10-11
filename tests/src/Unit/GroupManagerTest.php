@@ -46,7 +46,7 @@ class GroupManagerTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::GetAllGroupBundles
+   * @covers ::getAllGroupBundles
    */
   public function testGetAllGroupBundles() {
     $groups = ['test_entity' => ['a', 'b']];
