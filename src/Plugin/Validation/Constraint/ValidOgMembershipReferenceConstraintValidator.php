@@ -32,8 +32,8 @@ class ValidOgMembershipReferenceConstraintValidator extends ConstraintValidator 
       ->load($value->get('target_id')->getValue());
 
     if (!$entity) {
-      // Entity with that entity ID does not exists. This could happens when the
-      // user pass a bad value deliberately which can cause a fatal error.
+      // Entity with that entity ID does not exists. This could happen if a
+      // stale entity is passed for validation.
       return;
     }
 

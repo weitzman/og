@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Constraint;
  *
  * @Constraint(
  *   id = "ValidOgMembershipReference",
- *   label = @Translation("Entity Reference valid reference", context = "Validation")
+ *   label = @Translation("Organic Groups valid reference", context = "Validation")
  * )
  */
 class ValidOgMembershipReferenceConstraint extends Constraint {

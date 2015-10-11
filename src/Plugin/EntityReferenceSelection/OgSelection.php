@@ -74,7 +74,7 @@ class OgSelection extends DefaultSelection {
 
     $ids = [];
 
-    if ($this->configuration['handler_settings']['other_groups']) {
+    if ($this->configuration['handler_settings']['field_mode'] == 'admin') {
       // Don't include the groups, the user doesn't have create permission.
       foreach ($user_groups as $delta => $group) {
         if ($group->access('create')) {
@@ -119,7 +119,7 @@ class OgSelection extends DefaultSelection {
       \Drupal::entityManager()->getDefinition($this->configuration['target_type'])->getKey('id'),
       $this->configuration['target_type'],
       $this->getUserGroups(),
-      Og::groupManager()->getAllGroupsBundles($this->configuration['target_type'])
+      Og::groupManager()->GetAllGroupBundles($this->configuration['target_type'])
     ];
   }
 

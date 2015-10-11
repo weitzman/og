@@ -77,7 +77,7 @@ class GroupManager {
    *
    * @return array
    */
-  public function getAllGroupsBundles($entity_type = NULL) {
+  public function GetAllGroupBundles($entity_type = NULL) {
     if (!isset($this->groupMap)) {
       $this->refreshGroupMap();
     }
