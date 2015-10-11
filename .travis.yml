@@ -22,7 +22,7 @@ before_script:
   - git clone --branch 8.0.x --depth 1 http://git.drupal.org/project/drupal.git
   - cd drupal
 
-- ln -s $TESTDIR modules/og
+  - ln -s $TESTDIR modules/og
 
 script:
   # Run the PHPUnit tests which also include the kernel tests.
