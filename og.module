@@ -113,20 +113,7 @@ function og_entity_insert(EntityInterface $entity) {
       // todo: get the real name of the field.
       ->setFieldName(OG_AUDIENCE_FIELD)
       ->save();
-
-    // Assign roles to group manager.
-    // todo: handle when we will start with permission.
-//    $name = 'og_group_manager_default_rids_' . $entity_type . '_' . $bundle;
-//    if ($rids = variable_get($name)) {
-//      foreach ($rids as $rid) {
-//        og_role_grant($entity_type, $id, $entity->uid, $rid);
-//      }
-//    }
   }
-//  if (!og_is_group_default_access($entity_type, $entity)) {
-//    // Override default roles.
-//    og_roles_override($entity_type, $bundle, $id);
-//  }
 }
 
 /**

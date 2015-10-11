@@ -45,7 +45,7 @@ class OgSelection extends DefaultSelection {
     $identifier_key = \Drupal::entityManager()->getDefinition($this->configuration['target_type'])->getKey('id');
     $this->targetType = $this->configuration['target_type'];
     $user_groups = $this->getUserGroups();
-    $groups = Og::groupManager()->getAllGroups($this->configuration['target_type']);
+    $groups = Og::groupManager()->getAllGroupsBundles($this->configuration['target_type']);
 
     $query->condition('type', $groups, 'IN');
 
@@ -76,13 +76,6 @@ class OgSelection extends DefaultSelection {
         if ($group->access('create')) {
           $ids[] = $group->id();
         }
-        // todo: implements.
-//        elseif (!empty($node->nid) && (og_user_access($group_type, $gid, "update any $node_type content") || ($user->uid == $node->uid && og_user_access($group_type, $gid, "update own $node_type content")))) {
-//          $node_groups = isset($node_groups) ? $node_groups : og_get_entity_groups('node', $node->nid);
-//          if (in_array($gid, $node_groups[$group_type])) {
-//            $ids[] = $gid;
-//          }
-//        }
       }
       if ($ids) {
         $query->condition($identifier_key, $ids, 'NOT IN');
