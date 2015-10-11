@@ -154,9 +154,8 @@ class OG {
    *
    * @param $entity_type
    *   The entity type. Defaults to 'user'
-   * @param $entity
-   *   (optional) The entity object or entity ID. If empty, and $entity_type is
-   *   "user", the current user will be used.
+   * @param $entity_id
+   *   (optional) The entity ID.
    * @param $states
    *   (optional) Array with the state to return. Defaults to active.
    * @param $field_name
@@ -167,20 +166,12 @@ class OG {
    *  the OG membership ID and the group ID as the value. If nothing found,
    *  then an empty array.
    */
-  public static function getEntityGroups($entity_type = 'user', $entity = NULL, $states = array(OG_STATE_ACTIVE), $field_name = NULL) {
+  public static function getEntityGroups($entity_type = 'user', $entity_id = NULL, $states = array(OG_STATE_ACTIVE), $field_name = NULL) {
     $cache = &drupal_static(__FUNCTION__, array());
 
-    if ($entity_type == 'user' && empty($entity)) {
+    if ($entity_type == 'user' && empty($entity_id)) {
       $account = \Drupal::currentUser()->getAccount();
-      $entity = $account->id();
-    }
-
-    if ($entity instanceof AccountInterface) {
-      // Get the entity ID.
-      $id = $entity->id();
-    }
-    else {
-      $id = $entity;
+      $entity_id = $account->id();
     }
 
     // Get a string identifier of the states, so we can retrieve it from cache.
@@ -194,7 +185,7 @@ class OG {
 
     $identifier = [
       $entity_type,
-      $id,
+      $entity_id,
       $state_identifier,
       $field_name,
     ];
@@ -208,7 +199,7 @@ class OG {
     $cache[$identifier] = [];
     $query = \Drupal::entityQuery('og_membership')
       ->condition('entity_type', $entity_type)
-      ->condition('etid', $id);
+      ->condition('etid', $entity_id);
 
     if ($states) {
       $query->condition('state', $states, 'IN');

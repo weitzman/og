@@ -82,7 +82,7 @@ class GroupManager {
       $this->refreshGroupMap();
     }
 
-    return $entity_type ? $this->groupMap[$entity_type] : $this->groupMap;
+    return !empty($this->groupMap[$entity_type]) ? $this->groupMap[$entity_type] : $this->groupMap;
   }
 
   /**
