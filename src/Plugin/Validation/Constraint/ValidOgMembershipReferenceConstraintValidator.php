@@ -40,7 +40,7 @@ class ValidOgMembershipReferenceConstraintValidator extends ConstraintValidator 
     $params['%label'] = $entity->label();
 
     if (!Og::isGroup($entity->getEntityTypeId(), $entity->bundle())) {
-      $this->context->addViolation($this->t($constraint->NotValidGroup, $params));
+      $this->context->addViolation($constraint->NotValidGroup, $params);
       return;
     }
   }
