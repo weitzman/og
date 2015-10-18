@@ -12,13 +12,14 @@ use Drupal\field\Entity\FieldConfig;
 use Drupal\node\Entity\NodeType;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\og\Og;
+use Drupal\system\Tests\Entity\EntityUnitTestBase;
 
 /**
  * Tests entity reference selection plugins.
  *
  * @group og
  */
-class SelectionHandlerTest extends KernelTestBase {
+class SelectionHandlerTest extends EntityUnitTestBase {
 
   /**
    * Bundle of 'entity_test_no_label' entity.
