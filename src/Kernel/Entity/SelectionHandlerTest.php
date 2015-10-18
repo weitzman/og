@@ -2,25 +2,23 @@
 
 /**
  * @file
- * Contains \Drupal\Tests\system\Kernel\Entity\EntityReferenceSelectionReferenceableTest.
+ * Contains \Drupal\Tests\og\Kernel\Entity\SelectionHandlerTest.
  */
 
 namespace Drupal\Tests\og\Kernel\Entity;
 
 use Drupal\Component\Utility\Unicode;
-use Drupal\field\Tests\EntityReference\EntityReferenceTestTrait;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\node\Entity\NodeType;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\og\Og;
 
 /**
  * Tests entity reference selection plugins.
  *
  * @group og
  */
-class OgAudienceField extends KernelTestBase {
-
-  use EntityReferenceTestTrait;
+class SelectionHandlerTest extends KernelTestBase {
 
   /**
    * Bundle of 'entity_test_no_label' entity.
@@ -28,13 +26,6 @@ class OgAudienceField extends KernelTestBase {
    * @var string
    */
   protected $bundle;
-
-  /**
-   * Labels to be tested.
-   *
-   * @var array
-   */
-  protected static $labels = ['abc', 'Xyz_', 'xyabz_', 'foo_', 'bar_', 'baz_', 'șz_', NULL, '<strong>'];
 
   /**
    * The selection handler.
@@ -55,6 +46,9 @@ class OgAudienceField extends KernelTestBase {
     parent::setUp();
 
     $this->installEntitySchema('og_membership');
+    $this->installConfig(['og']);
+
+    Og::addGroup('node', 'group');
 
     // Create a new node-type.
     NodeType::create([
@@ -91,7 +85,7 @@ class OgAudienceField extends KernelTestBase {
    *
    * @dataProvider providerTestCases
    */
-  public function testReferenceablesWithNoLabelKey($match) {
+  public function testSelectionHandler($match) {
     $this->assertTrue($match == ['foo' , 'bar']);
     // Test ::getReferenceableEntities().
 //    $referenceables = $this->selectionHandler->getReferenceableEntities($match, $match_operator, $limit);
