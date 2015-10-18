@@ -8,18 +8,16 @@
 namespace Drupal\Tests\og\Kernel\Entity;
 
 use Drupal\Component\Utility\Unicode;
-use Drupal\field\Entity\FieldConfig;
 use Drupal\node\Entity\NodeType;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\og\Og;
-use Drupal\system\Tests\Entity\EntityUnitTestBase;
 
 /**
  * Tests entity reference selection plugins.
  *
  * @group og
  */
-class SelectionHandlerTest extends EntityUnitTestBase {
+class SelectionHandlerTest extends KernelTestBase {
 
   /**
    * Bundle of 'entity_test_no_label' entity.
@@ -52,7 +50,8 @@ class SelectionHandlerTest extends EntityUnitTestBase {
     ])->save();
 
     $this->installConfig(['og']);
-    Og::groupManager()->addGroup('node', $node_type);
+    $this->installEntitySchema('og_membership');
+    Og::groupManager()->addGroup('bundles', $node_type);
   }
 
   /**

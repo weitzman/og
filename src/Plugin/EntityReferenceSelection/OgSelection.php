@@ -79,7 +79,7 @@ class OgSelection extends DefaultSelection {
 
     $ids = [];
 
-    if ($this->configuration['handler_settings']['field_mode'] == 'admin') {
+    if (empty($this->configuration['handler_settings']['field_mode'])) {
       // Don't include the groups, the user doesn't have create permission.
       foreach ($user_groups as $delta => $group) {
         if ($group->access('create')) {
@@ -92,6 +92,11 @@ class OgSelection extends DefaultSelection {
       }
     }
     else {
+
+      if ($this->configuration['handler_settings']['field_mode'] != 'admin') {
+        return $query;
+      }
+
       // Determine which groups should be selectable.
       foreach ($user_groups as $group) {
         // Check if user has "create" permissions on those groups. If the user
