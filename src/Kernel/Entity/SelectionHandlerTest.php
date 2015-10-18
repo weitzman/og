@@ -8,9 +8,11 @@
 namespace Drupal\Tests\og\Kernel\Entity;
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\field\Entity\FieldConfig;
 use Drupal\node\Entity\NodeType;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\og\Og;
+use Drupal\user\Entity\User;
 
 /**
  * Tests entity reference selection plugins.
@@ -39,6 +41,16 @@ class SelectionHandlerTest extends KernelTestBase {
   public static $modules = ['system', 'user', 'field', 'entity_reference', 'node', 'og'];
 
   /**
+   * @var User
+   */
+  protected $user1;
+
+  /**
+   * @var User
+   */
+  protected $user2;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -65,6 +77,39 @@ class SelectionHandlerTest extends KernelTestBase {
 
     // Add og audience field to group conetent.
     \Drupal\og\Controller\OG::CreateField(OG_AUDIENCE_FIELD, 'node', $group_content_type);
+
+    // Get the storage of the field.
+    $field_config = FieldConfig::loadByName('node', $group_content_type, OG_AUDIENCE_FIELD);
+    $this->selectionHandler = $this->container->get('plugin.manager.entity_reference_selection')->getSelectionHandler($field_config);
+
+    // Creating the users accounts.
+    $this->user1 = User::create()->save();
+    $this->user2 = User::create()->save();
+
+    // Create the groups.
+    $storage = \Drupal::entityManager()->getStorage('node');
+
+    $nodes = [
+      [
+        'label' => $this->randomString(),
+        'bundle' => $group_type,
+        'user' => $this->user1,
+      ],
+      [
+        'label' => $this->randomString(),
+        'bundle' => $group_type,
+        'user' => $this->user1,
+      ],
+      [
+        'label' => $this->randomString(),
+        'bundle' => $group_type,
+        'user' => $this->user2,
+      ],
+    ];
+
+    foreach ($nodes as $node) {
+      $storage->create($node)->save();
+    }
   }
 
   /**
