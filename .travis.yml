@@ -8,12 +8,6 @@ mysql:
   username: root
   encoding: utf8
 
-addons:
-  apt:
-    packages:
-    - php5-cgi
-    - php5-mysql
-
 before_script:
   # Remember the current rules test directory for later use in the Drupal
   # installation.
@@ -21,11 +15,6 @@ before_script:
   # Navigate out of module directory to prevent blown stack by recursive module
   # lookup.
   - cd ..
-
-  # Update composer and drush.
-  - composer self-update
-  - export PATH="$HOME/.composer/vendor/bin:$PATH"
-  - composer global require drush/drush:dev-master
 
   # Create database.
   - mysql -e 'create database og'
@@ -35,20 +24,6 @@ before_script:
 
   - ln -s $TESTDIR modules/og
 
-  # Install drupal and OG
-  - drush --verbose site-install --db-url=mysql://root:@127.0.0.1/og --yes
-  - drush en simpletest og -y
-
-  # Ensure the PHP environment is ready.
-  - phpenv rehash
-
-  # Start a web server.
-  - drush runserver 127.0.0.1:8080 &
-
 script:
   # Run the PHPUnit tests which also include the kernel tests.
   - ./vendor/phpunit/phpunit/phpunit -c ./core/phpunit.xml.dist ./modules/og
-
-  # Run simple test.
-  - php core/scripts/run-tests.sh --verbose --color --php `which php` --url http://127.0.0.1:8080 "og" | tee /tmp/test.txt; TEST_EXIT=${PIPESTATUS[0]}; echo $TEST_EXIT
-
