@@ -92,7 +92,7 @@ class OgAudienceField extends KernelTestBase {
    * @dataProvider providerTestCases
    */
   public function testReferenceablesWithNoLabelKey($match) {
-    $this->assertTrue($match == ['foo' , 'bar', 'a']);
+    $this->assertTrue($match == ['foo' , 'bar']);
     // Test ::getReferenceableEntities().
 //    $referenceables = $this->selectionHandler->getReferenceableEntities($match, $match_operator, $limit);
 //
