@@ -76,7 +76,7 @@ class SelectionHandlerTest extends KernelTestBase {
     Og::groupManager()->addGroup('bundles', $group_type);
 
     // Add og audience field to group conetent.
-    \Drupal\og\Controller\OG::CreateField(OG_AUDIENCE_FIELD, 'node', $group_content_type);
+    Og::CreateField(OG_AUDIENCE_FIELD, 'node', $group_content_type);
 
     // Get the storage of the field.
     $field_config = FieldConfig::loadByName('node', $group_content_type, OG_AUDIENCE_FIELD);
