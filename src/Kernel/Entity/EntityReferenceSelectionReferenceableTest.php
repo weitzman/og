@@ -16,7 +16,7 @@ use Drupal\KernelTests\KernelTestBase;
 /**
  * Tests entity reference selection plugins.
  *
- * @group entity_reference
+ * @group og
  */
 class OgAudienceField extends KernelTestBase {
 
