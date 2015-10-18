@@ -44,14 +44,27 @@ class SelectionHandlerTest extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
 
+    // Add membership and config schema.
+    $this->installConfig(['og']);
+    $this->installEntitySchema('og_membership');
+
+    // Create a group.
     NodeType::create([
-      'type' => $node_type = Unicode::strtolower($this->randomMachineName()),
+      'type' => $group_type = Unicode::strtolower($this->randomMachineName()),
       'name' => $this->randomString(),
     ])->save();
 
-    $this->installConfig(['og']);
-    $this->installEntitySchema('og_membership');
-    Og::groupManager()->addGroup('bundles', $node_type);
+    // Create a group content type.
+    NodeType::create([
+      'type' => $group_content_type = Unicode::strtolower($this->randomMachineName()),
+      'name' => $this->randomString(),
+    ])->save();
+
+    // Define the group content as group.
+    Og::groupManager()->addGroup('bundles', $group_type);
+
+    // Add og audience field to group conetent.
+    \Drupal\og\Controller\OG::CreateField(OG_AUDIENCE_FIELD, 'node', $group_content_type);
   }
 
   /**
