@@ -24,6 +24,9 @@ before_script:
 
   - ln -s $TESTDIR modules/og
 
+  # Adding DB so PHPUnit could mock the environment.
+  - export SIMPLETEST_DB=mysql://root:@127.0.0.1/og;
+
 script:
   # Run the PHPUnit tests which also include the kernel tests.
   - ./vendor/phpunit/phpunit/phpunit -c ./core/phpunit.xml.dist ./modules/og
