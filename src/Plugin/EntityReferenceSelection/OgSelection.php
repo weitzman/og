@@ -26,28 +26,6 @@ use Drupal\og\Og;
 class OgSelection extends DefaultSelection {
 
   /**
-   * Get the current account.
-   *
-   * @return AccountInterface
-   */
-  public function getAccount() {
-    if (empty($this->account)) {
-      $this->setAccount(\Drupal::currentUser()->getAccount());
-    }
-
-    return $this->currentUser;
-  }
-
-  /**
-   * Set the current object account.
-   *
-   * @param AccountInterface $account
-   */
-  public function setAccount(AccountInterface $account) {
-    $this->currentUser = $account;
-  }
-
-  /**
    * Overrides the basic entity query object. Return only group in the matching
    * results.
    *
@@ -78,7 +56,7 @@ class OgSelection extends DefaultSelection {
 
     $ids = [];
 
-    if ($this->configuration['handler_settings']['field_mode'] == 'admin') {
+    if ($this->isGroupAdmin()) {
       // Don't include the groups, the user doesn't have create permission.
       foreach ($user_groups as $delta => $group) {
         if ($group->access('create')) {
@@ -114,13 +92,44 @@ class OgSelection extends DefaultSelection {
   }
 
   /**
+   * Gets the current account.
+   *
+   * @return AccountInterface
+   */
+  public function getAccount() {
+    if (empty($this->account)) {
+      $this->setAccount(\Drupal::currentUser()->getAccount());
+    }
+
+    return $this->currentUser;
+  }
+
+  /**
+   * Sets the current object account.
+   *
+   * @param AccountInterface $account
+   */
+  public function setAccount(AccountInterface $account) {
+    $this->currentUser = $account;
+  }
+
+  /**
    * Get the user's groups.
    *
    * @return ContentEntityInterface[]
    */
-  private function getUserGroups() {
+  protected function getUserGroups() {
     $other_groups = Og::getEntityGroups('user', $this->getAccount()->id());
     return $other_groups[$this->configuration['target_type']];
+  }
+
+  /**
+   * Determines if the current has hs group admin permission.
+   *
+   * @return bool
+   */
+  protected function isGroupAdmin() {
+    return $this->getAccount()->hasPermission('administer group');
   }
 
 }
