@@ -5,6 +5,6 @@ services:
   og.group.manager:
     class: Drupal\og\GroupManager
     arguments: ['@config.factory']
-  og.selection_selection:
+  og.selection_manager:
     class: Drupal\og\services\OgSelectionManager
     parent: default_plugin_manager

@@ -50,6 +50,28 @@ class OgSelection extends DefaultSelection {
   }
 
   /**
+   * Get the field configuration.
+   *
+   * @param $key
+   *   Specific key from the configuration. Optional.
+   *
+   * @return array|string
+   *   Value of a configuration or all the configurations.
+   */
+  public function getConfiguration($key = NULL) {
+    return empty($this->configuration[$key]) ? $this->configuration : $this->configuration[$key];
+  }
+
+  /**
+   * Get the handler of the field.
+   *
+   * @return DefaultSelection
+   */
+  public function getHandler() {
+    return \Drupal::service('plugin.manager.entity_reference_selection')->getInstance($this->configuration);
+  }
+
+  /**
    * Overrides the basic entity query object. Return only group in the matching
    * results.
    *
@@ -64,7 +86,9 @@ class OgSelection extends DefaultSelection {
    *   it.
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
-    $query = parent::buildEntityQuery($match, $match_operator);
+
+    $handler = $this->getHandler();
+    $query = $handler->buildEntityQuery();
 
     $target_type = $this->configuration['target_type'];
 

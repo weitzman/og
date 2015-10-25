@@ -83,7 +83,7 @@ class SelectionHandlerTest extends KernelTestBase {
 
     // Get the storage of the field.
     $field_config = FieldConfig::loadByName('node', $group_content_type, OG_AUDIENCE_FIELD);
-    $this->selectionHandler = $this->container->get('og.selection_selection')->getSelectionHandler($field_config);
+    $this->selectionHandler = $this->container->get('og.selection_manager')->getSelectionHandler($field_config);
   }
 
   /**
@@ -96,8 +96,6 @@ class SelectionHandlerTest extends KernelTestBase {
    * @dataProvider providerTestCases
    */
   public function testSelectionHandler($field_status, array $match = []) {
-    $this->selectionHandler;
-    $this->assertSame(1, 1);
   }
 
   /**
@@ -107,8 +105,7 @@ class SelectionHandlerTest extends KernelTestBase {
    */
   public function providerTestCases() {
     return [
-      ['node', ['NodeSelection']],
-      ['user', ['UserSelection']],
+      ['node', ['NodeSelection', 'default:node', 'node']],
     ];
   }
 

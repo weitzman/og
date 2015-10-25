@@ -31,8 +31,7 @@ class AudienceField extends OgFieldBase implements OgFieldsInterface {
       'cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
       'custom_storage' => TRUE,
       'settings' => [
-        'target_type' => 'node',
-        'handler' => 'default:node',
+        'target_type' => $this->getEntityType(),
       ],
     ]);
   }
