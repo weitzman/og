@@ -273,4 +273,9 @@ class Og {
     return $fields_config;
   }
 
+  public static function isAudienceField($field_name) {
+    // todo: implement bigger logic.
+    return $field_name == OG_AUDIENCE_FIELD;
+  }
+
 }

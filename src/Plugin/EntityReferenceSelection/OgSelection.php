@@ -16,7 +16,7 @@ use Drupal\og\Og;
  * Provide default OG selection handler.
  *
  * @EntityReferenceSelection(
- *   id = "default:og_membership",
+ *   id = "og:default",
  *   label = @Translation("OG selection"),
  *   group = "default",
  *   weight = 1

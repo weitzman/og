@@ -32,6 +32,7 @@ class AudienceField extends OgFieldBase implements OgFieldsInterface {
       'custom_storage' => TRUE,
       'settings' => [
         'target_type' => 'node',
+        'handler' => 'default:node',
       ],
     ]);
   }
