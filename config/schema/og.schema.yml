@@ -1,5 +1,5 @@
 og.settings:
-  type: config_entity
+  type: config_object
   label: 'Organic Groups settings'
   mapping:
     groups:

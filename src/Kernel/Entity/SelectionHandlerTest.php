@@ -9,6 +9,7 @@ namespace Drupal\Tests\og\Kernel\Entity;
 
 use Drupal\Component\Utility\Unicode;
 use Drupal\field\Entity\FieldConfig;
+use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\og\Og;
@@ -59,6 +60,9 @@ class SelectionHandlerTest extends KernelTestBase {
     // Add membership and config schema.
     $this->installConfig(['og']);
     $this->installEntitySchema('og_membership');
+    $this->installEntitySchema('user');
+    $this->installEntitySchema('node');
+    $this->installSchema('system', 'sequences');
 
     // Create a group.
     NodeType::create([
@@ -83,26 +87,26 @@ class SelectionHandlerTest extends KernelTestBase {
     $this->selectionHandler = $this->container->get('plugin.manager.entity_reference_selection')->getSelectionHandler($field_config);
 
     // Creating the users accounts.
-    $this->user1 = User::create()->save();
-    $this->user2 = User::create()->save();
+    $this->user1 = User::create(['name' => $this->randomString()])->save();
+    $this->user2 = User::create(['name' => $this->randomString()])->save();
 
     // Create the groups.
     $storage = \Drupal::entityManager()->getStorage('node');
 
     $nodes = [
       [
-        'label' => $this->randomString(),
-        'bundle' => $group_type,
+        'title' => $this->randomString(),
+        'type' => $group_type,
         'user' => $this->user1,
       ],
       [
-        'label' => $this->randomString(),
-        'bundle' => $group_type,
+        'title' => $this->randomString(),
+        'type' => $group_type,
         'user' => $this->user1,
       ],
       [
-        'label' => $this->randomString(),
-        'bundle' => $group_type,
+        'title' => $this->randomString(),
+        'type' => $group_type,
         'user' => $this->user2,
       ],
     ];
@@ -136,7 +140,7 @@ class SelectionHandlerTest extends KernelTestBase {
   public function providerTestCases() {
     return [
       ['my_group', ['group 1' , 'group 2']],
-//      ['other_groups', ['group 3']],
+      ['other_groups', ['group 3']],
     ];
   }
 
