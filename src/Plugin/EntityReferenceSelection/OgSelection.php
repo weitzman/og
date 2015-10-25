@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\node\Plugin\EntityReferenceSelection\OgSelection.
+ * Contains \Drupal\og\Plugin\EntityReferenceSelection\OgSelection.
  */
 
 namespace Drupal\og\Plugin\EntityReferenceSelection;
@@ -16,9 +16,8 @@ use Drupal\og\Og;
  * Provide default OG selection handler.
  *
  * @EntityReferenceSelection(
- *   id = "default:og",
+ *   id = "default:og_membership",
  *   label = @Translation("OG selection"),
- *   entity_types = {"node"},
  *   group = "default",
  *   weight = 1
  * )
@@ -42,9 +41,12 @@ class OgSelection extends DefaultSelection {
    * Set the current object account.
    *
    * @param AccountInterface $account
+   *   The user object.
+   * @return $this
    */
-  public function setAccount(AccountInterface $account) {
+  public function setAccount( $account) {
     $this->currentUser = $account;
+    return $this;
   }
 
   /**

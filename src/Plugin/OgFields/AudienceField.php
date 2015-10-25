@@ -31,18 +31,6 @@ class AudienceField extends OgFieldBase implements OgFieldsInterface {
       'cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
       'custom_storage' => TRUE,
       'settings' => [
-        'handler' => 'og',
-        'handler_submit' => 'Change handler',
-        'handler_settings' => [
-          'behaviors' => [
-            'og_behavior' => [
-              'status' => TRUE,
-            ],
-          ],
-          'target_bundles' => [],
-          'membership_type' => OG_MEMBERSHIP_TYPE_DEFAULT,
-        ],
-        // todo: allow to change the node type.
         'target_type' => 'node',
       ],
     ]);
@@ -55,11 +43,13 @@ class AudienceField extends OgFieldBase implements OgFieldsInterface {
     return FieldConfig::create([
       'label' => t('Groups audience'),
       'description' => t('OG group audience reference field.'),
-      //'default_value' => array(0 => array('value' => 1)),
       'display_label' => TRUE,
       'field_name' => OG_AUDIENCE_FIELD,
       'entity_type' => $this->getEntityType(),
       'bundle' => $this->getBundle(),
+      'settings' => array(
+        'handler' => 'og',
+      ),
     ]);
   }
 

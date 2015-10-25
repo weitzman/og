@@ -9,7 +9,6 @@ namespace Drupal\Tests\og\Kernel\Entity;
 
 use Drupal\Component\Utility\Unicode;
 use Drupal\field\Entity\FieldConfig;
-use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\og\Og;
@@ -32,7 +31,7 @@ class SelectionHandlerTest extends KernelTestBase {
   /**
    * The selection handler.
    *
-   * @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface.
+   * @var \Drupal\og\Plugin\EntityReferenceSelection\OgSelection.
    */
   protected $selectionHandler;
 
@@ -79,11 +78,13 @@ class SelectionHandlerTest extends KernelTestBase {
     // Define the group content as group.
     Og::groupManager()->addGroup('bundles', $group_type);
 
-    // Add og audience field to group conetent.
+    // Add og audience field to group content.
     Og::CreateField(OG_AUDIENCE_FIELD, 'node', $group_content_type);
 
     // Get the storage of the field.
     $field_config = FieldConfig::loadByName('node', $group_content_type, OG_AUDIENCE_FIELD);
+//    var_dump($field_config);
+//    throw new \Exception('a');
     $this->selectionHandler = $this->container->get('plugin.manager.entity_reference_selection')->getSelectionHandler($field_config);
 
     // Creating the users accounts.
@@ -126,7 +127,7 @@ class SelectionHandlerTest extends KernelTestBase {
    * @dataProvider providerTestCases
    */
   public function testSelectionHandler($field_status, array $match) {
-
+    $Rfoo = $this->selectionHandler->setAccount($this->user1)->getReferenceableEntities();
     if ($field_status == 'my_group') {
       $this->assertSame(['group 1' , 'group 2'], $match);
     }
