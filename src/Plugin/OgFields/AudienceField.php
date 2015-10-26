@@ -47,9 +47,6 @@ class AudienceField extends OgFieldBase implements OgFieldsInterface {
       'field_name' => OG_AUDIENCE_FIELD,
       'entity_type' => $this->getEntityType(),
       'bundle' => $this->getBundle(),
-      'settings' => array(
-        'handler' => 'og',
-      ),
     ]);
   }
 

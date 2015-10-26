@@ -95,7 +95,11 @@ class SelectionHandlerTest extends KernelTestBase {
    *
    * @dataProvider providerTestCases
    */
-  public function testSelectionHandler($field_status, array $match = []) {
+  public function testSelectionHandler(array $match) {
+    $this->assertEquals(get_class($this->selectionHandler), $match[0]);
+    $this->assertEquals(get_class($this->selectionHandler->getHandler()), $match[1]);
+    $this->assertEquals($this->selectionHandler->getConfiguration('handler'), $match[2]);
+    $this->assertEquals($this->selectionHandler->getConfiguration('target_type'), $match[3]);
   }
 
   /**
@@ -105,7 +109,7 @@ class SelectionHandlerTest extends KernelTestBase {
    */
   public function providerTestCases() {
     return [
-      ['node', ['NodeSelection', 'default:node', 'node']],
+      [['Drupal\og\Plugin\EntityReferenceSelection\OgSelection', 'Drupal\node\Plugin\EntityReferenceSelection\NodeSelection', 'default:node', 'node']],
     ];
   }
 
