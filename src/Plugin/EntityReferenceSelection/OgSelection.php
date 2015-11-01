@@ -59,7 +59,12 @@ class OgSelection extends DefaultSelection {
    *   Value of a configuration or all the configurations.
    */
   public function getConfiguration($key = NULL) {
-    return empty($this->configuration[$key]) ? $this->configuration : $this->configuration[$key];
+
+    if (!$key) {
+      return $this->configuration;
+    }
+
+    return isset($this->configuration[$key]) ? $this->configuration[$key] : NULL;
   }
 
   /**
