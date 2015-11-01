@@ -28,16 +28,16 @@ class OgSelectionManager extends SelectionPluginManager  {
   public function getSelectionHandler(FieldDefinitionInterface $field_definition, EntityInterface $entity = NULL) {
     $parent = parent::getSelectionHandler($field_definition, $entity);
 
-    if (!Og::isAudienceField($field_definition->getFieldStorageDefinition()->getName())) {
+    if (!Og::isGroupAudienceField($field_definition)) {
       return $parent;
     }
 
-    $options = array(
+    $options = [
       'target_type' => $field_definition->getFieldStorageDefinition()->getSetting('target_type'),
       'handler' => $field_definition->getSetting('handler'),
       'handler_settings' => $field_definition->getSetting('handler_settings') ?: array(),
       'entity' => $entity,
-    );
+    ];
 
     return $this->createInstance('og:default', $options);
   }

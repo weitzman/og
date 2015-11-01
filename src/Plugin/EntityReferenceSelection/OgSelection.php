@@ -44,7 +44,7 @@ class OgSelection extends DefaultSelection {
    *   The user object.
    * @return $this
    */
-  public function setAccount( $account) {
+  public function setAccount(AccountInterface $account = NULL) {
     $this->currentUser = $account;
     return $this;
   }
@@ -67,7 +67,7 @@ class OgSelection extends DefaultSelection {
    *
    * @return DefaultSelection
    */
-  public function getHandler() {
+  public function getSelectionHandler() {
     return \Drupal::service('og.selection_manager')->getInstance($this->configuration);
   }
 
@@ -87,7 +87,7 @@ class OgSelection extends DefaultSelection {
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
 
-    $handler = $this->getHandler();
+    $handler = $this->getSelectionHandler();
     $query = $handler->buildEntityQuery();
 
     $target_type = $this->configuration['target_type'];
