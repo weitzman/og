@@ -22,13 +22,6 @@ use Drupal\user\Entity\User;
 class SelectionHandlerTest extends KernelTestBase {
 
   /**
-   * Bundle of 'entity_test_no_label' entity.
-   *
-   * @var string
-   */
-  protected $bundle;
-
-  /**
    * The selection handler.
    *
    * @var \Drupal\og\Plugin\EntityReferenceSelection\OgSelection.
@@ -87,8 +80,13 @@ class SelectionHandlerTest extends KernelTestBase {
   }
 
   /**
-   * Tests values returned by SelectionInterface::getReferenceableEntities()
-   * when the target entity type has no 'label' key.
+   * Testing the OG manager selection handler.
+   *
+   * We need to verify that the manager selection handler will use the default
+   * selection manager of the entity which the audience field referencing to.
+   *
+   * i.e: When the field referencing to node, we need verify we got the default
+   * node selection handler.
    *
    * @param mixed $match
    *   The input text to be checked.

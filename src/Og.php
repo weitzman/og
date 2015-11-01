@@ -273,6 +273,15 @@ class Og {
     return $fields_config;
   }
 
+  /**
+   * Check if the given name is an audience field.
+   *
+   * @param $field_name
+   *   The field name.
+   *
+   * @return bool
+   *   TRUE if the field name represent audience field.
+   */
   public static function isAudienceField($field_name) {
     // todo: implement bigger logic.
     return $field_name == OG_AUDIENCE_FIELD;
