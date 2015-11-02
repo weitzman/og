@@ -90,6 +90,8 @@ class SelectionHandlerTest extends KernelTestBase {
    *
    * @param mixed $match
    *   The input text to be checked.
+   *
+   * @dataProvider providerTestCases
    */
   public function testSelectionHandler(array $match) {
     $this->assertEquals(get_class($this->selectionHandler), $match[0]);
