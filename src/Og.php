@@ -76,7 +76,8 @@ class Og {
     // Add the field to the form display manager.
     if (!$displayForm->getComponent($field_name) && $widgetDefinition = $og_field->widgetDefinition()) {
       $displayForm->setComponent($field_name, $widgetDefinition);
-      $displayForm->save();
+      // todo: fix when we handling the form widget.
+//      $displayForm->save();
     }
 
     // Define the view mode for the field.
