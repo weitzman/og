@@ -8,9 +8,12 @@
 namespace Drupal\Tests\og\Kernel\Entity;
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\og\Og;
+use Drupal\user\Entity\User;
 
 /**
  * Tests entity reference selection plugins.
@@ -32,6 +35,30 @@ class SelectionHandlerTest extends KernelTestBase {
   public static $modules = ['system', 'user', 'field', 'entity_reference', 'node', 'og'];
 
   /**
+   * @var User
+   */
+  protected $user1;
+
+  /**
+   * @var User
+   */
+  protected $user2;
+
+  /**
+   * @var string
+   *
+   * The machine name of the group node type.
+   */
+  protected $groupBundle;
+
+  /**
+   * @var string
+   *
+   * The machine name of the group content node type.
+   */
+  protected $groupContentBundle;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -45,18 +72,18 @@ class SelectionHandlerTest extends KernelTestBase {
     $this->installSchema('system', 'sequences');
 
     // Setting up variables.
-    $group_type = Unicode::strtolower($this->randomMachineName());
-    $group_content_type = Unicode::strtolower($this->randomMachineName());
+    $this->groupBundle = $group_type = Unicode::strtolower($this->randomMachineName());
+    $this->groupContentBundle = $group_content_type = Unicode::strtolower($this->randomMachineName());
 
     // Create a group.
     NodeType::create([
-      'type' => $group_type,
+      'type' => $this->groupBundle,
       'name' => $this->randomString(),
     ])->save();
 
     // Create a group content type.
     NodeType::create([
-      'type' => $group_content_type,
+      'type' => $this->groupContentBundle,
       'name' => $this->randomString(),
     ])->save();
 
@@ -68,6 +95,13 @@ class SelectionHandlerTest extends KernelTestBase {
 
     // Get the storage of the field.
     $this->selectionHandler = Og::getSelectionHandler('node', $group_content_type, OG_AUDIENCE_FIELD);
+
+    // Create two users.
+    $this->user1 = User::create(['name' => $this->randomString()]);
+    $this->user1->save();
+
+    $this->user2 = User::create(['name' => $this->randomString()]);
+    $this->user2->save();
   }
 
   /**
@@ -79,10 +113,49 @@ class SelectionHandlerTest extends KernelTestBase {
    * i.e: When the field referencing to node, we need verify we got the default
    * node selection handler.
    */
-  public function testSelectionHandler() {
+  public function _testSelectionHandler() {
     $this->assertEquals(get_class($this->selectionHandler->getSelectionHandler()), 'Drupal\node\Plugin\EntityReferenceSelection\NodeSelection');
     $this->assertEquals($this->selectionHandler->getConfiguration('handler'), 'default:node');
     $this->assertEquals($this->selectionHandler->getConfiguration('target_type'), 'node');
+  }
+
+  /**
+   * Testing OG selection handler results.
+   *
+   * We need to verify that each user get the groups he own in the normal widget
+   * and the other users group's in the other groups widget and vice versa.
+   */
+  public function testSelectionHandlerResults() {
+    $this->createGroups(2, $this->user1);
+    $this->createGroups(2, $this->user2);
+
+    $groups = $this->selectionHandler->setAccount($this->user1)->getReferenceableEntities();
+
+    var_dump($groups);
+  }
+
+  /**
+   * Creating groups for a given user.
+   *
+   * @param $amount
+   *   The number of groups to create.
+   * @param User $user
+   *   The user object which own the groups.
+   *
+   * @return ContentEntityBase[]
+   */
+  private function createGroups($amount, User $user) {
+    $groups = [];
+
+    for ($i = 0; $i <= $amount; $i++) {
+      $groups[] = Node::create([
+        'title' => $this->randomString(),
+        'uid' => $user->id(),
+        'type' => $this->groupBundle,
+      ])->save();
+    }
+
+    return $groups;
   }
 
 }
