@@ -24,7 +24,7 @@ og.settings:
     groups:
       type: mapping
       mapping:
-        bundles:
+        node:
           type: sequence
           label: 'OG groups'
           sequence:

@@ -126,12 +126,10 @@ class SelectionHandlerTest extends KernelTestBase {
    * and the other users group's in the other groups widget and vice versa.
    */
   public function testSelectionHandlerResults() {
-    $foo = $this->createGroups(2, $this->user1);
+    $this->createGroups(2, $this->user1);
     $this->createGroups(2, $this->user2);
-return;
-    $groups = $this->selectionHandler->getReferenceableEntities();
 
-    var_dump($groups);
+    $groups = $this->selectionHandler->getReferenceableEntities();
   }
 
   /**
