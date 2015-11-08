@@ -44,15 +44,19 @@ class SelectionHandlerTest extends KernelTestBase {
     $this->installEntitySchema('node');
     $this->installSchema('system', 'sequences');
 
+    // Setting up variables.
+    $group_type = Unicode::strtolower($this->randomMachineName());
+    $group_content_type = Unicode::strtolower($this->randomMachineName());
+
     // Create a group.
     NodeType::create([
-      'type' => $group_type = Unicode::strtolower($this->randomMachineName()),
+      'type' => $group_type,
       'name' => $this->randomString(),
     ])->save();
 
     // Create a group content type.
     NodeType::create([
-      'type' => $group_content_type = Unicode::strtolower($this->randomMachineName()),
+      'type' => $group_content_type,
       'name' => $this->randomString(),
     ])->save();
 
