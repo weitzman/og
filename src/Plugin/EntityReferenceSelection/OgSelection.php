@@ -68,15 +68,6 @@ class OgSelection extends DefaultSelection {
   }
 
   /**
-   * Get the handler of the field.
-   *
-   * @return DefaultSelection
-   */
-  public function getSelectionHandler() {
-    return \Drupal::service('plugin.manager.entity_reference_selection')->getSelectionHandler($this->configuration['field']);
-  }
-
-  /**
    * Overrides the basic entity query object. Return only group in the matching
    * results.
    *
@@ -92,7 +83,8 @@ class OgSelection extends DefaultSelection {
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
 
-    $handler = $this->getSelectionHandler();
+    /** @var DefaultSelection $handler */
+    $handler = \Drupal::service('plugin.manager.entity_reference_selection')->getSelectionHandler($this->configuration['field']);
     $query = $handler->buildEntityQuery();
 
     $target_type = $this->configuration['target_type'];
@@ -109,7 +101,7 @@ class OgSelection extends DefaultSelection {
 
     $ids = [];
 
-    if (empty($this->configuration['handler_settings']['field_mode'])) {
+    if ($this->configuration['handler_settings']['field_mode']) {
       // Don't include the groups, the user doesn't have create permission.
       foreach ($user_groups as $delta => $group) {
         if ($group->access('create')) {
@@ -122,10 +114,6 @@ class OgSelection extends DefaultSelection {
       }
     }
     else {
-
-      if ($this->configuration['handler_settings']['field_mode'] != 'admin') {
-        return $query;
-      }
 
       // Determine which groups should be selectable.
       foreach ($user_groups as $group) {
