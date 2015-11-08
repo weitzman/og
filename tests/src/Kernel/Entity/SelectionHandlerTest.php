@@ -2,17 +2,15 @@
 
 /**
  * @file
- * Contains \Drupal\Tests\og\Kernel\Entity\SelectionHandlerTest.
+ * Contains Drupal\Tests\og\Kernel\Entity\SelectionHandlerTest.
  */
 
 namespace Drupal\Tests\og\Kernel\Entity;
 
 use Drupal\Component\Utility\Unicode;
-use Drupal\field\Entity\FieldConfig;
 use Drupal\node\Entity\NodeType;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\og\Og;
-use Drupal\user\Entity\User;
 
 /**
  * Tests entity reference selection plugins.
@@ -32,16 +30,6 @@ class SelectionHandlerTest extends KernelTestBase {
    * {@inheritdoc}
    */
   public static $modules = ['system', 'user', 'field', 'entity_reference', 'node', 'og'];
-
-  /**
-   * @var User
-   */
-  protected $user1;
-
-  /**
-   * @var User
-   */
-  protected $user2;
 
   /**
    * {@inheritdoc}

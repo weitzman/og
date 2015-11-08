@@ -68,7 +68,7 @@ class OgSelection extends DefaultSelection {
   }
 
   /**
-   * Get the handler of the field.
+   * Get the selection handler of the field.
    *
    * @return DefaultSelection
    */
