@@ -7,11 +7,10 @@
 
 namespace Drupal\og;
 
-use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\og\Plugin\EntityReferenceSelection\OgSelection;
 
 /**
@@ -306,7 +305,7 @@ class Og {
     $field_definition = FieldConfig::loadByName($entity, $bundle, $field_name);
 
     if (!Og::isGroupAudienceField($field_definition)) {
-      throw new \Exception(t('The field @name is not an audience field.', ['@name' => $field_name]));
+      throw new \Exception(new FormattableMarkup('The field @name is not an audience field.', ['@name' => $field_name]));
     }
 
     $options = [

@@ -92,8 +92,11 @@ class OgSelection extends DefaultSelection {
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
 
-    $handler = $this->getSelectionHandler();
-    $query = $handler->buildEntityQuery();
+    // Getting the original entity selection handler. OG selection handler using
+    // the default selection handler of the entity, which the field reference
+    // to, and add another logic to the query object i.e. check if the entities
+    // bundle defined as group.
+    $query = $this->getSelectionHandler()->buildEntityQuery();
 
     $target_type = $this->configuration['target_type'];
 
