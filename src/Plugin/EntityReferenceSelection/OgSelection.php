@@ -68,6 +68,15 @@ class OgSelection extends DefaultSelection {
   }
 
   /**
+   * Get the handler of the field.
+   *
+   * @return DefaultSelection
+   */
+  public function getSelectionHandler() {
+    return \Drupal::service('plugin.manager.entity_reference_selection')->getSelectionHandler($this->configuration['field']);
+  }
+
+  /**
    * Overrides the basic entity query object. Return only group in the matching
    * results.
    *
@@ -83,8 +92,7 @@ class OgSelection extends DefaultSelection {
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
 
-    /** @var DefaultSelection $handler */
-    $handler = \Drupal::service('plugin.manager.entity_reference_selection')->getSelectionHandler($this->configuration['field']);
+    $handler = $this->getSelectionHandler();
     $query = $handler->buildEntityQuery();
 
     $target_type = $this->configuration['target_type'];
