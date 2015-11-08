@@ -75,8 +75,7 @@ class SelectionHandlerTest extends KernelTestBase {
     Og::CreateField(OG_AUDIENCE_FIELD, 'node', $group_content_type);
 
     // Get the storage of the field.
-    $field_config = FieldConfig::loadByName('node', $group_content_type, OG_AUDIENCE_FIELD);
-    $this->selectionHandler = $this->container->get('og.selection_manager')->getSelectionHandler($field_config);
+    $this->selectionHandler = Og::getSelectionHandler('node', $group_content_type, OG_AUDIENCE_FIELD);
   }
 
   /**
@@ -94,10 +93,9 @@ class SelectionHandlerTest extends KernelTestBase {
    * @dataProvider providerTestCases
    */
   public function testSelectionHandler(array $match) {
-    $this->assertEquals(get_class($this->selectionHandler), $match[0]);
-    $this->assertEquals(get_class($this->selectionHandler->getSelectionHandler()), $match[1]);
-    $this->assertEquals($this->selectionHandler->getConfiguration('handler'), $match[2]);
-    $this->assertEquals($this->selectionHandler->getConfiguration('target_type'), $match[3]);
+    $this->assertEquals(get_class($this->selectionHandler->getSelectionHandler()), $match[0]);
+    $this->assertEquals($this->selectionHandler->getConfiguration('handler'), $match[1]);
+    $this->assertEquals($this->selectionHandler->getConfiguration('target_type'), $match[2]);
   }
 
   /**
@@ -107,7 +105,7 @@ class SelectionHandlerTest extends KernelTestBase {
    */
   public function providerTestCases() {
     return [
-      [['Drupal\og\Plugin\EntityReferenceSelection\OgSelection', 'Drupal\node\Plugin\EntityReferenceSelection\NodeSelection', 'default:node', 'node']],
+      [['Drupal\node\Plugin\EntityReferenceSelection\NodeSelection', 'default:node', 'node']],
     ];
   }
 

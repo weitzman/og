@@ -73,7 +73,7 @@ class OgSelection extends DefaultSelection {
    * @return DefaultSelection
    */
   public function getSelectionHandler() {
-    return \Drupal::service('og.selection_manager')->getInstance($this->configuration);
+    return \Drupal::service('plugin.manager.entity_reference_selection')->getSelectionHandler($this->configuration['field']);
   }
 
   /**

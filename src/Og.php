@@ -7,10 +7,12 @@
 
 namespace Drupal\og;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\og\Plugin\EntityReferenceSelection\OgSelection;
 
 /**
  * A static helper class for OG.
@@ -271,6 +273,36 @@ class Og {
     }
 
     return $fields_config;
+  }
+
+  /**
+   * Get the selection handler for an audience field attached to entity.
+   *
+   * @param $entity
+   *   The entity type.
+   * @param $bundle
+   *   The bundle name.
+   * @param $field_name
+   *   The field name.
+   *
+   * @return OgSelection
+   * @throws \Exception
+   */
+  public static function getSelectionHandler($entity, $bundle, $field_name) {
+    $field_definition = FieldConfig::loadByName($entity, $bundle, $field_name);
+
+    if (!Og::isGroupAudienceField($field_definition)) {
+      throw new \Exception(t('The field @name is not an audience field.', ['@name' => $field_name]));
+    }
+
+    $options = [
+      'target_type' => $field_definition->getFieldStorageDefinition()->getSetting('target_type'),
+      'field' => $field_definition,
+      'handler' => $field_definition->getSetting('handler'),
+      'handler_settings' => $field_definition->getSetting('handler_settings') ?: array(),
+    ];
+
+    return \Drupal::service('plugin.manager.entity_reference_selection')->createInstance('og:default', $options);
   }
 
 }
