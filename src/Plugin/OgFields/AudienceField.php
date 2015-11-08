@@ -31,7 +31,18 @@ class AudienceField extends OgFieldBase implements OgFieldsInterface {
       'cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
       'custom_storage' => TRUE,
       'settings' => [
-        'target_type' => \Drupal::entityManager()->getStorage('node')->getEntityTypeId(),
+        'handler' => 'og',
+        'handler_submit' => 'Change handler',
+        'handler_settings' => [
+          'behaviors' => [
+            'og_behavior' => [
+              'status' => TRUE,
+            ],
+          ],
+          'target_bundles' => [],
+          'membership_type' => OG_MEMBERSHIP_TYPE_DEFAULT,
+        ],
+        'target_type' => $this->getEntityType(),
       ],
     ]);
   }
