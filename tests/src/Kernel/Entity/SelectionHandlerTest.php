@@ -88,7 +88,7 @@ class SelectionHandlerTest extends KernelTestBase {
     ])->save();
 
     // Define the group content as group.
-    Og::groupManager()->addGroup('bundles', $group_type);
+    Og::groupManager()->addGroup('node', $group_type);
 
     // Add og audience field to group content.
     Og::CreateField(OG_AUDIENCE_FIELD, 'node', $group_content_type);
@@ -126,10 +126,10 @@ class SelectionHandlerTest extends KernelTestBase {
    * and the other users group's in the other groups widget and vice versa.
    */
   public function testSelectionHandlerResults() {
-    $this->createGroups(2, $this->user1);
+    $foo = $this->createGroups(2, $this->user1);
     $this->createGroups(2, $this->user2);
-
-    $groups = $this->selectionHandler->setAccount($this->user1)->getReferenceableEntities();
+return;
+    $groups = $this->selectionHandler->getReferenceableEntities();
 
     var_dump($groups);
   }
@@ -148,11 +148,14 @@ class SelectionHandlerTest extends KernelTestBase {
     $groups = [];
 
     for ($i = 0; $i <= $amount; $i++) {
-      $groups[] = Node::create([
+      $group = Node::create([
         'title' => $this->randomString(),
         'uid' => $user->id(),
         'type' => $this->groupBundle,
-      ])->save();
+      ]);
+      $group->save();
+
+      $groups[] = $group;
     }
 
     return $groups;
