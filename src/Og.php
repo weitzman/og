@@ -59,22 +59,35 @@ class Og {
       static::invalidateCache();
     }
 
+    $form_display_storage = \Drupal::entityManager()->getStorage('entity_form_display');
+    /** @var \Drupal\Core\Entity\Display\EntityFormDisplayInterface $displayForm */
+    if (!$displayForm = $form_display_storage->load($entity_type . '.' . $bundle . '.default')) {
+
+      $values = [
+        'targetEntityType' => $entity_type,
+        'bundle' => $bundle,
+        'mode' => 'default',
+        'status' => TRUE,
+      ];
+
+      $displayForm = $form_display_storage->create($values);
+    }
+
     // Add the field to the form display manager.
-//    $displayForm = EntityFormDisplay::load($entity_type . '.' . $bundle . '.default');
-//    if (!$displayForm->getComponent($field_name) && $widgetDefinition = $og_field->widgetDefinition()) {
-//      $displayForm->setComponent($field_name, $widgetDefinition);
-//      $displayForm->save();
-//    }
-//
-//    // Define the view mode for the field.
-//    if ($fieldViewModes = $og_field->viewModesDefinition()) {
-//      $prefix = $entity_type . '.' . $bundle . '.';
-//      $viewModes = \Drupal::entityManager()->getStorage('entity_view_display')->loadMultiple(array_keys($fieldViewModes));
-//
-//      foreach ($viewModes as $key => $viewMode) {
-//        $viewMode->setComponent($field_name, $fieldViewModes[$prefix . $key])->save();
-//      }
-//    }
+    if (!$displayForm->getComponent($field_name) && $widgetDefinition = $og_field->widgetDefinition()) {
+      $displayForm->setComponent($field_name, $widgetDefinition);
+      $displayForm->save();
+    }
+
+    // Define the view mode for the field.
+    if ($fieldViewModes = $og_field->viewModesDefinition()) {
+      $prefix = $entity_type . '.' . $bundle . '.';
+      $viewModes = \Drupal::entityManager()->getStorage('entity_view_display')->loadMultiple(array_keys($fieldViewModes));
+
+      foreach ($viewModes as $key => $viewMode) {
+        $viewMode->setComponent($field_name, $fieldViewModes[$prefix . $key])->save();
+      }
+    }
   }
 
   /**
