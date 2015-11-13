@@ -92,34 +92,12 @@ class OgSelection extends DefaultSelection {
   }
 
   /**
-   * Gets the current account.
-   *
-   * @return AccountInterface
-   */
-  public function getAccount() {
-    if (empty($this->account)) {
-      $this->setAccount(\Drupal::currentUser()->getAccount());
-    }
-
-    return $this->currentUser;
-  }
-
-  /**
-   * Sets the current object account.
-   *
-   * @param AccountInterface $account
-   */
-  public function setAccount(AccountInterface $account) {
-    $this->currentUser = $account;
-  }
-
-  /**
    * Get the user's groups.
    *
    * @return ContentEntityInterface[]
    */
   protected function getUserGroups() {
-    $other_groups = Og::getEntityGroups('user', $this->getAccount()->id());
+    $other_groups = Og::getEntityGroups('user', $this->currentUser->id());
     return isset($other_groups[$this->configuration['target_type']]) ? $other_groups[$this->configuration['target_type']] : [];
   }
 
