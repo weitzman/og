@@ -68,6 +68,21 @@ class OgSelection extends DefaultSelection {
   }
 
   /**
+   * Set a configuration value.
+   *
+   * @param $key
+   *   The key of the configuration.
+   * @param $value
+   *   The value of the configuration.
+   *
+   * @return $this
+   */
+  public function setConfiguration($key, $value) {
+    $this->configuration[$key] = $value;
+    return $this;
+  }
+
+  /**
    * Get the selection handler of the field.
    *
    * @return DefaultSelection
@@ -111,32 +126,24 @@ class OgSelection extends DefaultSelection {
     }
 
     $ids = [];
-
     if (isset($this->configuration['handler_settings']['field_mode']) && $this->configuration['handler_settings']['field_mode'] == 'admin') {
       // Don't include the groups, the user doesn't have create permission.
       foreach ($user_groups as $delta => $group) {
-        if ($group->access('create', $this->getAccount())) {
-          $ids[] = $group->id();
-        }
+        $ids[] = $group->id();
       }
 
       if ($ids) {
-        $query->condition($identifier_key, $ids, 'IN');
+        $query->condition($identifier_key, $ids, 'NOT IN');
       }
     }
     else {
       // Determine which groups should be selectable.
       foreach ($user_groups as $group) {
-        // Check if user has "create" permissions on those groups. If the user
-        // doesn't have create permission, check if perhaps the content already
-        // exists and the user has edit permission.
-        if ($group->access('create', $this->getAccount())) {
-          $ids[] = $group->id();
-        }
+        $ids[] = $group->id();
       }
 
       if ($ids) {
-        $query->condition($identifier_key, $ids, 'NOT IN');
+        $query->condition($identifier_key, $ids, 'IN');
       }
       else {
         // User doesn't have permission to select any group so falsify this
