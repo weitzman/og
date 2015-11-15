@@ -113,7 +113,7 @@ class SelectionHandlerTest extends KernelTestBase {
    * i.e: When the field referencing to node, we need verify we got the default
    * node selection handler.
    */
-  public function _testSelectionHandler() {
+  public function testSelectionHandler() {
     $this->assertEquals(get_class($this->selectionHandler->getSelectionHandler()), 'Drupal\node\Plugin\EntityReferenceSelection\NodeSelection');
     $this->assertEquals($this->selectionHandler->getConfiguration('handler'), 'default:node');
     $this->assertEquals($this->selectionHandler->getConfiguration('target_type'), 'node');
