@@ -88,7 +88,11 @@ class GroupManager {
     $editable->set('groups', $groups);
     $saved = $editable->save();
 
-    $this->refreshGroupMap();
+    // For some reason, after saving the groups in the config
+    // $this->refreshGroupMap can't return what we saved. Apply now a small fix.
+    // todo: fix it!
+//    $this->refreshGroupMap();
+    $this->groupMap = $groups;
 
     return $saved;
   }

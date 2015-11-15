@@ -130,6 +130,8 @@ class SelectionHandlerTest extends KernelTestBase {
     $this->createGroups(2, $this->user2);
 
     $groups = $this->selectionHandler->getReferenceableEntities();
+
+    var_dump($groups);
   }
 
   /**
