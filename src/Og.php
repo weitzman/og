@@ -146,7 +146,7 @@ class Og {
     $results = $query->execute();
 
     /** @var \Drupal\og\Entity\OgMembership[] $memberships */
-    $memberships = \Drupal::entityManager()
+    $memberships = \Drupal::entityTypeManager()
       ->getStorage('og_membership')
       ->loadMultiple($results);
 

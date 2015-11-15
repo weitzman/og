@@ -30,7 +30,7 @@ class OgSelection extends DefaultSelection {
    * @return AccountInterface
    */
   public function getAccount() {
-    if (empty($this->account)) {
+    if (empty($this->currentUser)) {
       $this->setAccount(\Drupal::currentUser()->getAccount());
     }
 
@@ -100,7 +100,7 @@ class OgSelection extends DefaultSelection {
 
     $target_type = $this->configuration['target_type'];
 
-    $identifier_key = \Drupal::entityManager()->getDefinition($target_type)->getKey('id');
+    $identifier_key = \Drupal::entityTypeManager()->getDefinition($target_type)->getKey('id');
     $user_groups = $this->getUserGroups();
     $bundles = Og::groupManager()->getAllGroupBundles($target_type);
 
@@ -112,10 +112,10 @@ class OgSelection extends DefaultSelection {
 
     $ids = [];
 
-    if ($this->configuration['handler_settings']['field_mode'] == 'admin') {
+    if (isset($this->configuration['handler_settings']['field_mode']) && $this->configuration['handler_settings']['field_mode'] == 'admin') {
       // Don't include the groups, the user doesn't have create permission.
       foreach ($user_groups as $delta => $group) {
-        if ($group->access('create')) {
+        if ($group->access('create', $this->getAccount())) {
           $ids[] = $group->id();
         }
       }
@@ -130,10 +130,11 @@ class OgSelection extends DefaultSelection {
         // Check if user has "create" permissions on those groups. If the user
         // doesn't have create permission, check if perhaps the content already
         // exists and the user has edit permission.
-        if ($group->access('create')) {
+        if ($group->access('create', $this->getAccount())) {
           $ids[] = $group->id();
         }
       }
+
       if ($ids) {
         $query->condition($identifier_key, $ids, 'NOT IN');
       }
