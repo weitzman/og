@@ -150,8 +150,6 @@ class Og {
       ->getStorage('og_membership')
       ->loadMultiple($results);
 
-    static::$entityGroupCache[$identifier]['node'] = [];
-
     /** @var \Drupal\og\Entity\OgMembership $membership */
     foreach ($memberships as $membership) {
       static::$entityGroupCache[$identifier][$membership->getGroupType()][$membership->id()] = $membership->getGroup();
