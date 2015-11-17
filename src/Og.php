@@ -306,7 +306,7 @@ class Og {
    * @return OgSelection
    * @throws \Exception
    */
-  public static function getSelectionHandler($entity, $bundle, $field_name, $is_admin = FALSE) {
+  public static function getSelectionHandler($entity, $bundle, $field_name, $my_groups = TRUE) {
     $field_definition = FieldConfig::loadByName($entity, $bundle, $field_name);
 
     if (!Og::isGroupAudienceField($field_definition)) {
@@ -318,7 +318,7 @@ class Og {
       'field' => $field_definition,
       'handler' => $field_definition->getSetting('handler'),
       'handler_settings' => $field_definition->getSetting('handler_settings') ?: array(),
-      'is_admin' => $is_admin,
+      'my_groups' => $my_groups,
     ];
 
     return \Drupal::service('plugin.manager.entity_reference_selection')->createInstance('og:default', $default_options);

@@ -9,7 +9,6 @@ namespace Drupal\og\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\og\Og;
 
 /**
@@ -95,7 +94,7 @@ class OgSelection extends DefaultSelection {
     $ids = [];
 
 
-    if ($this->getConfiguration('is_admin')) {
+    if (!$this->getConfiguration('my_groups')) {
       // Don't include the groups, the user doesn't have create permission.
       foreach ($user_groups as $delta => $group) {
         $ids[] = $group->id();

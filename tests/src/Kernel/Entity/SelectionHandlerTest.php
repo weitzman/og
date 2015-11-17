@@ -22,12 +22,6 @@ use Drupal\user\Entity\User;
  */
 class SelectionHandlerTest extends KernelTestBase {
 
-  /**
-   * The selection handler.
-   *
-   * @var \Drupal\og\Plugin\EntityReferenceSelection\OgSelection.
-   */
-  protected $selectionHandler;
 
   /**
    * {@inheritdoc}
@@ -93,8 +87,6 @@ class SelectionHandlerTest extends KernelTestBase {
     // Add og audience field to group content.
     Og::CreateField(OG_AUDIENCE_FIELD, 'node', $this->groupContentBundle);
 
-    // Get the storage of the field.
-    $this->selectionHandler = Og::getSelectionHandler('node', $this->groupContentBundle, OG_AUDIENCE_FIELD);
 
     // Create two users.
     $this->user1 = User::create(['name' => $this->randomString()]);
@@ -129,8 +121,11 @@ class SelectionHandlerTest extends KernelTestBase {
     $user1_groups = $this->createGroups(2, $this->user1);
     $user2_groups = $this->createGroups(2, $this->user2);
 
+    // Get the storage of the field.
+    $selection_handler = Og::getSelectionHandler('node', $this->groupContentBundle, OG_AUDIENCE_FIELD);
+
     // Checking that the user get the groups he mange.
-    $groups = $this->selectionHandler->setAccount($this->user1)->getReferenceableEntities();
+    $groups = $selection_handler->getReferenceableEntities();
     $this->assertEquals($user1_groups, array_keys($groups[$this->groupBundle]));
 
     $groups = $this->selectionHandler->setAccount($this->user2)->getReferenceableEntities();
