@@ -318,11 +318,11 @@ class Og {
   /**
    * Returns the group manager instance.
    *
-   * @return \Drupal\og\GroupManager
+   * @return \Drupal\og\GroupMap
    */
   public static function groupManager() {
     // @todo store static reference for this?
-    return \Drupal::service('og.group.manager');
+    return \Drupal::service('og.group_manager');
   }
 
   /**

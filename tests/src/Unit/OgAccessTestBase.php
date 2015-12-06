@@ -17,7 +17,7 @@ use Drupal\og\OgAccess;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\og\GroupManager;
+use Drupal\og\GroupMap;
 use Prophecy\Argument;
 
 class OgAccessTestBase extends UnitTestCase {
@@ -40,7 +40,7 @@ class OgAccessTestBase extends UnitTestCase {
   protected $bundle;
 
   /**
-   * @var \Drupal\og\GroupManager
+   * @var \Drupal\og\GroupMap
    */
   protected $groupManager;
 
@@ -48,7 +48,7 @@ class OgAccessTestBase extends UnitTestCase {
     $this->entityTypeId = $this->randomMachineName();
     $this->bundle = $this->randomMachineName();
 
-    $this->groupManager = $this->prophesize(GroupManager::class);
+    $this->groupManager = $this->prophesize(GroupMap::class);
     $this->groupManager->isGroup($this->entityTypeId, $this->bundle)->willReturn(TRUE);
 
     $cache_contexts_manager = $this->prophesize(CacheContextsManager::class);
@@ -66,7 +66,7 @@ class OgAccessTestBase extends UnitTestCase {
     $this->user->hasPermission(OgAccess::ADMINISTER_GROUP_PERMISSION)->willReturn(FALSE);
 
     $container = new ContainerBuilder();
-    $container->set('og.group.manager', $this->groupManager->reveal());
+    $container->set('og.group_manager', $this->groupManager->reveal());
     $container->set('cache_contexts_manager', $cache_contexts_manager->reveal());
     $container->set('config.factory', $config_factory->reveal());
     $container->set('module_handler', $this->prophesize(ModuleHandlerInterface::class)->reveal());
