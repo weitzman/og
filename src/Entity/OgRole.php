@@ -6,7 +6,12 @@
  */
 namespace Drupal\og\Entity;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\og\Og;
+use Drupal\system\Tests\Common\PageRenderTest;
+use Drupal\user\Entity\User;
 
 /**
  * @ConfigEntityType(
@@ -194,7 +199,7 @@ class OgRole extends ConfigEntityBase {
    * @return array
    */
   public function getPermissions() {
-    return $this->get('permissions');;
+    return $this->get('permissions');
   }
 
   /**
@@ -206,6 +211,35 @@ class OgRole extends ConfigEntityBase {
     $this->permissions = $permissions;
     $this->set('permissions', $permissions);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageInterface $storage) {
+    $errors = [];
+
+    // Check the permission exists.
+    foreach ($this->getPermissions() as $permission) {
+      if (!in_array($permission, Og::permissionHandler()->getPermissions())) {
+        $errors[] = new FormattableMarkup('The permissions @permission does not exists.', ['@permission' => $permission]);
+      }
+    }
+
+    // Verify the given group type is a group.
+    if (!Og::groupManager()->isGroup($this->getGroupType(), $this->getGroupBundle())) {
+      $errors[] = new FormattableMarkup('@entity_type:@bundle does not defined as a group.', [
+        '@entity_type' => $this->getGroupType(),
+        '@bundle' => $this->getGroupBundle(),
+      ]);
+    }
+
+    // Check if the user exists.
+    if (!User::load($this->getUid())) {
+      $errors[] = new FormattableMarkup('A user with the uid @uid does not exists.', ['@uid' => $this->getUid()]);
+    }
+
+    parent::preSave($storage);
   }
 
 }
