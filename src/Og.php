@@ -287,32 +287,7 @@ class Og {
    *   none found.
    */
   public static function getAllGroupAudienceFields($entity_type_id, $bundle, $group_type_id = NULL, $group_bundle = NULL) {
-    $return = [];
-
-    foreach (\Drupal::entityManager()->getFieldDefinitions($entity_type_id, $bundle) as $field_definition) {
-      if (!static::isGroupAudienceField($field_definition)) {
-        // Not a group audience field.
-        continue;
-      }
-
-      $target_type = $field_definition->getFieldStorageDefinition()->getSetting('target_type');
-
-      if (isset($group_type_id) && $target_type != $group_type_id) {
-        // Field doesn't reference this group type.
-        continue;
-      }
-
-      $handler_settings = $field_definition->getSetting('handler_settings');
-
-      if (isset($group_bundle) && !empty($handler_settings['target_bundles']) && !in_array($group_bundle, $handler_settings['target_bundles'])) {
-        continue;
-      }
-
-      $field_name = $field_definition->getName();
-      $return[$field_name] = $field_definition;
-    }
-
-    return $return;
+    return static::groupRepository()->getAllGroupAudienceFields($entity_type_id, $bundle, $group_type_id, $group_bundle);
   }
 
   /**
@@ -323,6 +298,16 @@ class Og {
   public static function groupManager() {
     // @todo store static reference for this?
     return \Drupal::service('og.group_manager');
+  }
+
+  /**
+   * Returns the group repository instance.
+   *
+   * @return \Drupal\og\GroupRepository
+   */
+  public static function groupRepository() {
+    // @todo store static reference for this?
+    return \Drupal::service('og.group_repository');
   }
 
   /**

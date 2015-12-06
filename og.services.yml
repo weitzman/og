@@ -8,3 +8,6 @@ services:
   og.permissions:
     class: Drupal\og\OgPermissionHandler
     arguments: ['@module_handler', '@string_translation', '@controller_resolver']
+  og.group_repository:
+    cllass: Drupal\og\GroupRepository
+    arguments: ['@entity_field.manager', '@entity.query']
