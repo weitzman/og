@@ -20,6 +20,9 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\og\GroupMap;
 use Prophecy\Argument;
 
+/**
+ * Base class for the og access tests.
+ */
 class OgAccessTestBase extends UnitTestCase {
 
   /**
