@@ -47,7 +47,8 @@ class OgAccessEntityTest extends OgAccessTestBase  {
     $this->groupManager->isGroup($entity_type_id, $bundle)->willReturn(FALSE);
 
     $group_repository = $this->prophesize(GroupRepository::class);
-    $group_repository->getAllGroupAudienceFields($entity_type_id, $bundle, NULL, NULL)->willReturn(['some group we did not mock']);
+    $group_repository->getEntityGroups($this->entity, [OG_STATE_ACTIVE], NULL)->willReturn([[$this->groupEntity()->reveal()]]);
+    $group_repository->getAllGroupAudienceFields($entity_type_id, $bundle, NULL, NULL)->willReturn(['some fields we did not mock']);
     \Drupal::getContainer()->set('og.group_repository', $group_repository->reveal());
 
     $r = new \ReflectionClass('Drupal\og\Og');

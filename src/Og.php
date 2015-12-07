@@ -116,57 +116,7 @@ class Og {
    *  then an empty array.
    */
   public static function getEntityGroups(EntityInterface $entity, array $states = [OG_STATE_ACTIVE], $field_name = NULL) {
-    $entity_type_id = $entity->getEntityTypeId();
-    $entity_id = $entity->id();
-
-    // Get a string identifier of the states, so we can retrieve it from cache.
-    if ($states) {
-      sort($states);
-      $state_identifier = implode(':', $states);
-    }
-    else {
-      $state_identifier = FALSE;
-    }
-
-    $identifier = [
-      $entity_type_id,
-      $entity_id,
-      $state_identifier,
-      $field_name,
-    ];
-
-    $identifier = implode(':', $identifier);
-    if (isset(static::$entityGroupCache[$identifier])) {
-      // Return cached values.
-      return static::$entityGroupCache[$identifier];
-    }
-
-    static::$entityGroupCache[$identifier] = [];
-    $query = \Drupal::entityQuery('og_membership')
-      ->condition('entity_type', $entity_type_id)
-      ->condition('etid', $entity_id);
-
-    if ($states) {
-      $query->condition('state', $states, 'IN');
-    }
-
-    if ($field_name) {
-      $query->condition('field_name', $field_name);
-    }
-
-    $results = $query->execute();
-
-    /** @var \Drupal\og\Entity\OgMembership[] $memberships */
-    $memberships = \Drupal::entityTypeManager()
-      ->getStorage('og_membership')
-      ->loadMultiple($results);
-
-    /** @var \Drupal\og\Entity\OgMembership $membership */
-    foreach ($memberships as $membership) {
-      static::$entityGroupCache[$identifier][$membership->getGroupType()][$membership->id()] = $membership->getGroup();
-    }
-
-    return static::$entityGroupCache[$identifier];
+    return static::groupRepository()->getEntityGroups($entity, $states, $field_name);
   }
 
   /**
@@ -344,8 +294,7 @@ class Og {
       drupal_static_reset($cache);
     }
 
-    // @todo Consider using a reset() method.
-    static::$entityGroupCache = [];
+    static::groupRepository()->resetCache();
 
     // Invalidate the entity property cache.
     \Drupal::entityManager()->clearCachedDefinitions();
