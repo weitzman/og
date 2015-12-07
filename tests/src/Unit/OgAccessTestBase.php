@@ -22,6 +22,9 @@ use Prophecy\Argument;
 
 class OgAccessTestBase extends UnitTestCase {
 
+  /**
+   * @var \Prophecy\Prophecy\MethodProphecy
+   */
   protected $config;
 
   /**
@@ -54,11 +57,11 @@ class OgAccessTestBase extends UnitTestCase {
     $cache_contexts_manager = $this->prophesize(CacheContextsManager::class);
     $cache_contexts_manager->assertValidTokens(Argument::any())->willReturn(TRUE);
 
-    $this->config = $this->addCache($this->prophesize(Config::class));
-    $this->config->get('group_manager_full_access')->willReturn(FALSE);
+    $config = $this->addCache($this->prophesize(Config::class));
+    $this->config = $config->get('group_manager_full_access')->willReturn(FALSE);
 
     $config_factory = $this->prophesize(ConfigFactory::class);
-    $config_factory->get('og.settings')->willReturn($this->config);
+    $config_factory->get('og.settings')->willReturn($config);
 
     $this->user = $this->prophesize(AccountInterface::class);
     $this->user->isAuthenticated()->willReturn(TRUE);
