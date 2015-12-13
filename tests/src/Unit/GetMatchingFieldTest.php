@@ -7,7 +7,9 @@
 
 namespace Drupal\Tests\og\Unit;
 
+use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -66,8 +68,23 @@ class GetMatchingFieldTest extends UnitTestCase {
     $group_type_id = 'entity_test';
     $group_bundle = 'test1';
 
+    $field_definitions = array(
+      'id' => BaseFieldDefinition::create('integer'),
+      'revision_id' => BaseFieldDefinition::create('integer'),
+    );
 
-    $this->assertSame(OgGroupAudienceHelper::getMatchingField($entity_prophecy->reveal(), $group_type_id, $group_bundle), $expected);
+    $entity_manager = $this->getMock('\Drupal\Core\Entity\EntityManagerInterface');
+    $entity_manager->expects($this->any())
+      ->method('getFieldDefinitions')
+      ->with($group_type_id, $group_bundle)
+      ->will($this->returnValue($this->$field_definitions));
+
+    $container = new ContainerBuilder();
+    $container->set('entity.manager', $entity_manager);
+    \Drupal::setContainer($container);
+
+
+    $this->assertSame(OgGroupAudienceHelper::getMatchingField($entity_prophecy->reveal(), $group_type_id, $group_bundle), $field_name);
   }
 
   /**
