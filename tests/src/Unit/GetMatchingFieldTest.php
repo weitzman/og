@@ -87,28 +87,4 @@ class GetMatchingFieldTest extends UnitTestCase {
     $this->assertSame(OgGroupAudienceHelper::getMatchingField($entity_prophecy->reveal(), $group_type_id, $group_bundle), $field_name);
   }
 
-  /**
-   * Data provider for testFieldCardinality.
-   *
-   * @return array
-   *   The values to test which correspond to:
-   *     - The count of existing items in the field.
-   *     - Field cardinality.
-   *     - The expected result where TRUE signifies the field may be populated
-   *       by another value.
-   */
-  public function providerTestFieldCardinality() {
-    return [
-      [0, 1, TRUE],
-      [1, 1, FALSE],
-      [2, 1, FALSE],
-      [1, 2, TRUE],
-      [2, 2, FALSE],
-      [3, 2, FALSE],
-      [0, FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED, TRUE],
-      [1, FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED, TRUE],
-      [10, FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED, TRUE],
-    ];
-  }
-
 }
