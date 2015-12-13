@@ -24,9 +24,9 @@ use Drupal\og\OgGroupAudienceHelper;
 class GetMatchingFieldTest extends UnitTestCase {
 
   /**
-   * @covers ::checkFieldCardinality
+   * @covers ::getMatchingField
    */
-  public function testFieldCardinality() {
+  public function testGetMatchingField() {
     $field_name = 'test_field';
 
     $field_storage_definition_prophecy = $this->prophesize(FieldStorageDefinitionInterface::class);
@@ -46,7 +46,7 @@ class GetMatchingFieldTest extends UnitTestCase {
     $field_definition_prophecy->getSetting('target_type')
       ->willReturn('entity_test')
       ->shouldBeCalled();
-    
+
 
     $entity_prophecy = $this->prophesize(ContentEntityInterface::class);
 
