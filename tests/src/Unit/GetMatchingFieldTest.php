@@ -68,6 +68,7 @@ class GetMatchingFieldTest extends UnitTestCase {
     $group_type_id = 'entity_test';
     $group_bundle = 'test1';
 
+    // @todo: This is probably still very wrong.
     $field_definitions = array(
       'id' => BaseFieldDefinition::create('integer'),
       'revision_id' => BaseFieldDefinition::create('integer'),
