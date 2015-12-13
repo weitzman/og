@@ -77,12 +77,14 @@ class GetMatchingFieldTest extends UnitTestCase {
     $entity_manager->expects($this->any())
       ->method('getFieldDefinitions')
       ->with($group_type_id, $group_bundle)
-      ->will($this->returnValue($this->$field_definitions));
+      ->will($this->returnValue($field_definitions));
 
     $container = new ContainerBuilder();
     $container->set('entity.manager', $entity_manager);
     \Drupal::setContainer($container);
 
+    // @todo: For now, until I get the tests to work we'll do a simple assert.
+    // After that we'll add a proper dataProvider.
 
     $this->assertSame(OgGroupAudienceHelper::getMatchingField($entity_prophecy->reveal(), $group_type_id, $group_bundle), $field_name);
   }
