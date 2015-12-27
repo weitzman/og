@@ -41,6 +41,7 @@ class OgRoleHandlerTest extends KernelTestBase {
    * Testing getting all group audience fields.
    */
   public function testRoleHandler() {
+    // Creating a role and user.
     $og_role = OgRole::create();
     $og_role
       ->setId('content_editor')
@@ -48,12 +49,19 @@ class OgRoleHandlerTest extends KernelTestBase {
       ->grantPermission('administer group')
       ->save();
 
-    $user = User::create(['name' => $this->randomString()]);
+    $user = User::create(['name' => $this->randomString(), 'status' => 1]);
 
-    $og_users_role = Og::rolesHandler()->grantRole($user, $og_role);
+    // Assign the role.
+    $og_users_role = Og::rolesHandler()->assignRole($user, $og_role);
 
+    // Verify the handler return the correct object.
     $this->assertEquals($og_role->id(), $og_users_role->getRid());
     $this->assertEquals($user->id(), $og_users_role->getUid());
+
+    // Query for assigned role using the role manager.
+    $assigned_roles = Og::rolesHandler()->getAssignedRoles($user->id());
+
+    // Revoke the assigned role from the user.
   }
 
 }
