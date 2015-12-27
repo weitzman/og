@@ -6,8 +6,11 @@
  */
 namespace Drupal\og\Entity;
 
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\og\Og;
 use Drupal\og\OgRoleInterface;
 use Drupal\user\Entity\Role;
+use Exception;
 
 /**
  * Defines the OG user role entity class.
@@ -147,9 +150,18 @@ class OgRole extends Role implements OgRoleInterface {
    * {@inheritdoc}
    */
   public function save() {
-    // Check if the entity defined as a group.
 
-    // Check if the permission in exists.
+    // Check if the given entity type exists.
+    if (!\Drupal::entityTypeManager()->getDefinition($this->group_type)) {
+      throw new EntityStorageException("There is no entity {$this->group_type}.");
+    }
+
+    // Check if the entity defined as a group.
+    if (!Og::groupManager()->isGroup($this->group_type, $this->group_bundle)) {
+      throw new Exception("{$this->group_type}:{$this->group_bundle} is defined as a group bundle.");
+    }
+
+    // Check if the permission in assigned to the role exists.
 
     if ($this->isNew()) {
       // When assigning a role to group we need to add a prefix to the ID in
@@ -157,7 +169,9 @@ class OgRole extends Role implements OgRoleInterface {
       $prefix = $this->group_type . '-' . $this->group_bundle . '-';
 
       if (!empty($this->group_id)) {
-        // Check if the entity exists.
+        if (!\Drupal::entityTypeManager()->getStorage($this->group_type)->load($this->group_id)) {
+          throw new Exception("The entity {$this->group_type}:{$this->group_id} does not exists.");
+        }
         $prefix .= $this->group_id . '-';
       }
 
