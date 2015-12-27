@@ -10,6 +10,7 @@ namespace Drupal\og;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
+use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\user\EntityOwnerInterface;
@@ -25,7 +26,6 @@ class OgAccess {
    *   - pre_alter: The pre-altered permissions, as read from the config.
    */
   protected static $permissionsCache = ['pre_alter' => [], 'post_alter' => []];
-
 
   /**
    * Administer permission string.
@@ -265,6 +265,22 @@ class OgAccess {
    */
   public static function reset() {
     static::$permissionsCache = ['pre_alter' => [], 'post_alter' => []];
+  }
+
+  /**
+   * Check if the given group entity overrides the global roles and permissions.
+   *
+   * @param ContentEntityBase $entity
+   *   The entity instance.
+   *
+   * @return bool
+   */
+  public static function OverridingRolesPermission(ContentEntityBase $entity) {
+    if (!$entity->hasField(OG_DEFAULT_ACCESS_FIELD)) {
+      return;
+    }
+
+    return $entity->get(OG_DEFAULT_ACCESS_FIELD)->value;
   }
 
 }
