@@ -147,6 +147,9 @@ class OgRole extends Role implements OgRoleInterface {
    * {@inheritdoc}
    */
   public function save() {
+    // Check if the entity defined as a group.
+
+    // Check if the permission in exists.
 
     if ($this->isNew()) {
       // When assigning a role to group we need to add a prefix to the ID in
@@ -154,6 +157,7 @@ class OgRole extends Role implements OgRoleInterface {
       $prefix = $this->group_type . '-' . $this->group_bundle . '-';
 
       if (!empty($this->group_id)) {
+        // Check if the entity exists.
         $prefix .= $this->group_id . '-';
       }
 
