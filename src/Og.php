@@ -357,7 +357,7 @@ class Og {
   /**
    * Return the og roles handler instance.
    *
-   * @return OgRolesHandler
+   * @return OgRolesStorage
    */
   public static function rolesHandler() {
     return \Drupal::service('og.roles');

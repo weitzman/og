@@ -11,17 +11,10 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\og\Entity\OgRole;
 use Drupal\og\Entity\OgUsersRole;
 
-class OgRolesHandler {
+class OgRolesStorage {
 
   /**
-   * Grant role to user.
-   *
-   * @param $account
-   *   The account instance.
-   * @param $role
-   *   The role instance.
-   *
-   * @return OgUsersRole
+   * {@inheritdoc}
    */
   public function assignRole(AccountInterface $account, OgRole $role) {
     $users_role = OgUsersRole::create();
@@ -38,13 +31,7 @@ class OgRolesHandler {
   }
 
   /**
-   * Get the assigned roles to a user.
-   *
-   * @param $uid
-   *   The user ID.
-   *
-   * @return OgUsersRole[]
-   *   Array of assigned roles to a user.
+   * {@inheritdoc}
    */
   public function getAssignedRoles($uid) {
     $query = \Drupal::entityQuery('og_users_role');
