@@ -41,8 +41,29 @@ class OgRoleTest extends KernelTestBase {
     $og_role
       ->setId('content_editor')
       ->setLabel('Content editor')
-      ->grantPermission('administer group')
-      ->save();
+      ->grantPermission('administer group');
+
+    try {
+      $og_role->save();
+      $this->fail('No exception were thrown when trying to save a role without a group entity or bundle.');
+    }
+    catch (\Exception $e) {
+      $this->assertEquals('Entity type or entity bundle are missing.', $e->getMessage());
+    }
+
+    $og_role
+      ->setGroupType('not_existing_entity')
+      ->setGroupBundle('group');
+
+    try {
+      $og_role->save();
+      $this->fail('No exception were thrown when trying to save a role with un defined entity type.');
+    }
+    catch (\Exception $e) {
+      $this->assertEquals('The "not_existing_entity" entity type does not exist.', $e->getMessage());
+    }
+
+    // Creating a new node type.
 
     // Checking creation of the role.
     $this->assertEquals($og_role->getPermissions(), ['administer group']);

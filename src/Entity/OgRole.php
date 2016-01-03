@@ -151,9 +151,13 @@ class OgRole extends Role implements OgRoleInterface {
    */
   public function save() {
 
+    if (empty($this->group_type) || empty($this->group_bundle)) {
+      throw new Exception('Entity type or entity bundle are missing.');
+    }
+
     // Check if the given entity type exists.
     if (!\Drupal::entityTypeManager()->getDefinition($this->group_type)) {
-      throw new EntityStorageException("There is no entity {$this->group_type}.");
+      throw new Exception("There is no entity {$this->group_type}.");
     }
 
     // Check if the entity defined as a group.
