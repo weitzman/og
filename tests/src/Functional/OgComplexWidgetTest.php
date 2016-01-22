@@ -2,24 +2,24 @@
 
 /**
  * @file
- * Contains \Drupal\og\Tests\OgComplexWidgetTest.
+ * Contains \Drupal\Tests\og\Functional\OgComplexWidgetTest.
  */
 
-namespace Drupal\og\Tests;
+namespace Drupal\Tests\og\Functional;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
 use Drupal\og\Entity\OgMembership;
 use Drupal\og\Og;
 use Drupal\og\OgGroupAudienceHelper;
-use Drupal\simpletest\WebTestBase;
+use Drupal\simpletest\BrowserTestBase;
 
 /**
  * Tests the complex widget.
  *
  * @group og
  */
-class OgComplexWidgetTest extends WebTestBase {
+class OgComplexWidgetTest extends BrowserTestBase {
 
   /**
    * {@inheritdoc}
