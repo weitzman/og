@@ -9,10 +9,14 @@ namespace Drupal\Tests\og\Functional;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\Display\EntityFormDisplayInterface;
+use Drupal\KernelTests\AssertLegacyTrait;
 use Drupal\og\Entity\OgMembership;
 use Drupal\og\Og;
 use Drupal\og\OgGroupAudienceHelper;
+use Drupal\simpletest\AssertContentTrait;
 use Drupal\simpletest\BrowserTestBase;
+use Drupal\simpletest\ContentTypeCreationTrait;
+use Drupal\simpletest\NodeCreationTrait;
 
 /**
  * Tests the complex widget.
@@ -20,6 +24,11 @@ use Drupal\simpletest\BrowserTestBase;
  * @group og
  */
 class OgComplexWidgetTest extends BrowserTestBase {
+
+  use AssertContentTrait;
+  use AssertLegacyTrait;
+  use ContentTypeCreationTrait;
+  use NodeCreationTrait;
 
   /**
    * {@inheritdoc}
@@ -34,12 +43,12 @@ class OgComplexWidgetTest extends BrowserTestBase {
     parent::setUp();
 
     // Create a "group" node type and turn it into a group type.
-    $this->drupalCreateContentType(['type' => 'group']);
+    $this->createContentType(['type' => 'group']);
     Og::groupManager()->addGroup('node', 'group');
 
     // Add a group audience field to the "post" node type, turning it into a
     // group content type.
-    $this->drupalCreateContentType(['type' => 'post']);
+    $this->createContentType(['type' => 'post']);
     Og::createField(OgGroupAudienceHelper::DEFAULT_FIELD, 'node', 'post');
 
     // Make the group audience field visible in the default form display.
@@ -74,21 +83,21 @@ class OgComplexWidgetTest extends BrowserTestBase {
 //      OG_GROUP_FIELD . '[und][0][value]' => 1,
     ];
     $settings['uid'] = $user1->uid;
-    $group1 = $this->drupalCreateNode($settings);
+    $group1 = $this->createNode($settings);
 
     $settings['uid'] = $user2->uid;
-    $group2 = $this->drupalCreateNode($settings);
+    $group2 = $this->createNode($settings);
 
     // Create a post in each group.
     $settings = [
       'type' => 'post',
     ];
     $settings['uid'] = $user1->uid;
-    $post1 = $this->drupalCreateNode($settings);
+    $post1 = $this->createNode($settings);
     $this->addContentToGroup($post1, $group1);
 
     $settings['uid'] = $user2->uid;
-    $post2 = $this->drupalCreateNode($settings);
+    $post2 = $this->createNode($settings);
     $this->addContentToGroup($post2, $group2);
 
     $this->drupalLogin($user1);
@@ -121,16 +130,16 @@ class OgComplexWidgetTest extends BrowserTestBase {
       OG_GROUP_FIELD . '[und][0][value]' => 1,
     ];
     $settings['uid'] = $user1->uid;
-    $group1 = $this->drupalCreateNode($settings);
+    $group1 = $this->createNode($settings);
 
     $settings['uid'] = $user2->uid;
-    $group2 = $this->drupalCreateNode($settings);
+    $group2 = $this->createNode($settings);
 
     $settings = [
       'type' => 'post',
     ];
     $settings['uid'] = $user1->uid;
-    $post1 = $this->drupalCreateNode($settings);
+    $post1 = $this->createNode($settings);
     og_group('node', $group1->id(), ['entity_type' => 'node', 'entity' => $post1]);
     og_group('node', $group2->id(), ['entity_type' => 'node', 'entity' => $post1]);
 
@@ -156,7 +165,7 @@ class OgComplexWidgetTest extends BrowserTestBase {
       OG_GROUP_FIELD . '[und][0][value]' => 1,
     ];
     $settings['uid'] = $user1->uid;
-    $group1 = $this->drupalCreateNode($settings);
+    $group1 = $this->createNode($settings);
 
     og_group('node', $group1->id(), ['entity' => $user2, 'state' => OG_STATE_PENDING]);
 
@@ -182,15 +191,15 @@ class OgComplexWidgetTest extends BrowserTestBase {
       OG_GROUP_FIELD . '[und][0][value]' => 1,
       'uid' => $user1->uid,
     ];
-    $group1 = $this->drupalCreateNode($settings);
-    $group2 = $this->drupalCreateNode($settings);
+    $group1 = $this->createNode($settings);
+    $group2 = $this->createNode($settings);
 
     // Create group content.
     $settings = [
       'type' => 'post',
       'uid' => $user1->uid,
     ];
-    $post1 = $this->drupalCreateNode($settings);
+    $post1 = $this->createNode($settings);
 
     og_group('node', $group1->id(), ['entity_type' => 'node', 'entity' => $post1, 'field_name' => OG_AUDIENCE_FIELD]);
     og_group('node', $group2->id(), ['entity_type' => 'node', 'entity' => $post1, 'field_name' => 'another_field']);
