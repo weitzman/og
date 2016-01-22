@@ -43,6 +43,8 @@ class OgComplexWidgetTest extends WebTestBase {
     Og::createField(OgGroupAudienceHelper::DEFAULT_FIELD, 'node', 'post');
 
     // Make the group audience field visible in the default form display.
+    // @todo Remove this once issue #144 is in.
+    // @see https://github.com/amitaibu/og/issues/144
     /** @var EntityFormDisplayInterface $form_display */
     $form_display = \Drupal::entityManager()->getStorage('entity_form_display')->load('node.post.default');
     $widget = $form_display->getComponent('og_group_ref');
