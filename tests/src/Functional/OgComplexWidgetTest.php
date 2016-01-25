@@ -13,6 +13,7 @@ use Drupal\KernelTests\AssertLegacyTrait;
 use Drupal\og\Entity\OgMembership;
 use Drupal\og\Og;
 use Drupal\og\OgGroupAudienceHelper;
+use Drupal\og\OgMembershipInterface;
 use Drupal\simpletest\AssertContentTrait;
 use Drupal\simpletest\BrowserTestBase;
 use Drupal\simpletest\ContentTypeCreationTrait;
@@ -26,6 +27,7 @@ use Drupal\simpletest\NodeCreationTrait;
 class OgComplexWidgetTest extends BrowserTestBase {
 
   use AssertContentTrait;
+  // @todo Convert legacy asserts and remove legacy trait.
   use AssertLegacyTrait;
   use ContentTypeCreationTrait;
   use NodeCreationTrait;
@@ -152,7 +154,8 @@ class OgComplexWidgetTest extends BrowserTestBase {
     $this->addContentToGroup($post1, $group2);
 
     $this->drupalLogin($user2);
-    $this->submitForm("node/$post1->id()/edit", [], 'Save');
+    $this->drupalGet("node/$post1->id()/edit");
+    $this->submitForm([], 'Save');
 
     // Assert post still belongs to both groups, although user was able
     // to select only one.
@@ -172,16 +175,16 @@ class OgComplexWidgetTest extends BrowserTestBase {
       'type' => 'group',
       // @todo I think this is obsolete.
       // OG_GROUP_FIELD . '[und][0][value]' => 1,
+      'uid' => $user1->id(),
     ];
-    $settings['uid'] = $user1->id();
     $group1 = $this->createNode($settings);
 
-    og_group('node', $group1->id(), ['entity' => $user2, 'state' => OG_STATE_PENDING]);
+    og_group('node', $group1->id(), ['entity' => $user2, 'state' => OgMembershipInterface::STATE_PENDING]);
 
     $this->drupalLogin($user2);
     $this->submitForm("user/{$user2->id()}/edit", [], 'Save');
 
-    $this->assertTrue(Og::getEntityGroups('user', $user2, [OG_STATE_PENDING]), 'User membership was retained after user save.');
+    $this->assertTrue(Og::getEntityGroups('user', $user2, [OgMembershipInterface::STATE_PENDING]), 'User membership was retained after user save.');
   }
 
   /**
@@ -228,8 +231,14 @@ class OgComplexWidgetTest extends BrowserTestBase {
    *   The content entity to make a member.
    * @param ContentEntityInterface $group_entity
    *   The group entity that will host the content entity.
+   * @param int $state
+   *   The activation state of the membership. Can be one of the following:
+   *   - OgMembershipInterface::STATE_ACTIVE
+   *   - OgMembershipInterface::STATE_BLOCKED
+   *   - OgMembershipInterface::STATE_PENDING
+   *   Defaults to OgMembershipInterface::STATE_ACTIVE.
    */
-  protected function addContentToGroup(ContentEntityInterface $member_entity, ContentEntityInterface $group_entity) {
+  protected function addContentToGroup(ContentEntityInterface $member_entity, ContentEntityInterface $group_entity, $state = OgMembershipInterface::STATE_ACTIVE) {
     /** @var OgMembership $membership */
     $membership = Og::membershipStorage()->create(Og::membershipDefault());
     $membership
@@ -238,6 +247,7 @@ class OgComplexWidgetTest extends BrowserTestBase {
       ->setMemberEntityId($member_entity->id())
       ->setGroupEntityType($group_entity->getEntityTypeId())
       ->setGroupEntityid($group_entity->id())
+      ->setState($state)
       ->save();
   }
 
