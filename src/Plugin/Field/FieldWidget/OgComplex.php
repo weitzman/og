@@ -306,10 +306,13 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * {@inheritdoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    $parent_values = $values;
+    // Remove empty values. The form fields may be empty.
+    $values = array_filter($values, function ($item) {
+      return !empty($item['target_id']);
+    });
 
     // Get the groups from the other groups widget.
-    foreach ($form['other_groups'] as $key => $value) {
+    foreach ($form['og_group_ref']['other_groups'] as $key => $value) {
       if (!is_int($key)) {
         continue;
       }
@@ -318,18 +321,16 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       // be captured in it's own group, with the key 'id'.
       preg_match("|.+\((?<id>[\w.]+)\)|", $value['target_id']['#value'], $matches);
 
-      if (empty($matches['id'])) {
-        continue;
+      if (!empty($matches['id'])) {
+        $values[] = [
+          'target_id' => $matches['id'],
+          '_weight' => $value['_weight']['#value'],
+          '_original_delta' => $value['_weight']['#delta'],
+        ];
       }
-
-      $parent_values[] = [
-        'target_id' => $matches['id'],
-        '_weight' => $value['_weight']['#value'],
-        '_original_delta' => $value['_weight']['#delta'],
-      ];
     }
 
-    return $parent_values;
+    return $values;
   }
 
   /**
