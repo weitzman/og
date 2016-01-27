@@ -181,11 +181,9 @@ class OgComplexWidgetTest extends BrowserTestBase {
     $user1 = $this->drupalCreateUser(['administer group', 'access content', 'create post content']);
     $user2 = $this->drupalCreateUser(['access content', 'create post content']);
 
-    // Create group nodes.
+    // Create a group for each user.
     $settings = [
       'type' => 'group',
-      // @todo I think this is obsolete.
-      // OG_GROUP_FIELD . '[und][0][value]' => 1,
       'uid' => $user1->id(),
     ];
     $group1 = $this->createNode($settings);
@@ -193,10 +191,9 @@ class OgComplexWidgetTest extends BrowserTestBase {
     $settings['uid'] = $user2->id();
     $group2 = $this->createNode($settings);
 
+    // Create a post that references both groups.
     $settings = [
       'type' => 'post',
-      // @todo I think this is obsolete.
-      // OG_GROUP_FIELD . '[und][0][value]' => 1,
       'uid' => $user1->id(),
     ];
     $post1 = $this->createNode($settings);
@@ -204,14 +201,25 @@ class OgComplexWidgetTest extends BrowserTestBase {
     $this->addContentToGroup($post1, $group1);
     $this->addContentToGroup($post1, $group2);
 
+    // Check that both groups are referenced.
+    $gids = Og::getEntityGroups($post1);
+    $this->assertEquals(2, count($gids['node']), 'Both groups are referenced initially.');
+
+    // Reset the entity query from Og::getEntityGroups().
+    Og::invalidateCache($gids['node']);
+
+    // Log in as user 2. This user doesn't have group administration rights, so
+    // only its own group is visible in the form. Resave the form.
     $this->drupalLogin($user2);
-    $this->drupalGet("node/$post1->id()/edit");
+    $this->drupalGet("node/{$post1->id()}/edit");
     $this->submitForm([], 'Save');
 
     // Assert post still belongs to both groups, although user was able
     // to select only one.
-    $gids = Og::getEntityGroups('node', $post1);
-    $this->assertEqual(count($gids['node']), 2, 'Hidden groups remained.');
+    // @todo This currently fails, indicating that this functionality has
+    // regressed.
+    $gids = Og::getEntityGroups($post1);
+    $this->assertEquals(2, count($gids['node']), 'Hidden groups remained.');
   }
 
   /**
@@ -268,7 +276,7 @@ class OgComplexWidgetTest extends BrowserTestBase {
     og_group('node', $group2->id(), ['entity_type' => 'node', 'entity' => $post1, 'field_name' => 'another_field']);
 
     $this->drupalLogin($user1);
-    $this->drupalGet("node/$post1->id()/edit");
+    $this->drupalGet("node/{$post1->id()}/edit");
 
     // Assert correct selection in both fields.
     $this->assertOptionSelected('edit-og-group-ref-und-0-default', $group1->id());
