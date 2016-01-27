@@ -154,24 +154,24 @@ class OgComplexWidgetTest extends BrowserTestBase {
     $this->addContentToGroup($post2, $group2);
 
     $this->drupalLogin($user1);
-    $this->drupalGet("node/{$post1->id()}/edit");
+    $this->content = $this->drupalGet("node/{$post1->id()}/edit");
 
     // @todo Not sure what this is supposed to be testing. What is "default
     // field mode"?
-    // $fields = $this->xpath('//*[@id="edit-og-group-ref-und-0-default"]');
-    // $this->assertEqual($fields[0]->option['value'], '_none', '"Default" field mode is not required for administrator.');
+    $fields = $this->xpath('//*[@id="edit-og-group-ref-und-0-default"]');
+    $this->assertEqual($fields[0]->option['value'], '_none', '"Default" field mode is not required for administrator.');
 
     // @todo Update selector.
-    // $fields = $this->xpath('//*[@id="edit-og-group-ref-und-0-admin-0-target-id"]');
-    // $this->assertTrue(strpos($fields[0]->attributes()->class[0], 'form-autocomplete'), '"Administrator field more is an autocomplete widget type."');
+    $fields = $this->xpath('//*[@id="edit-og-group-ref-und-0-admin-0-target-id"]');
+    $this->assertTrue(strpos($fields[0]->attributes()->class[0], 'form-autocomplete'), '"Administrator field more is an autocomplete widget type."');
 
     $this->drupalLogin($user2);
     // @todo: Seems to be a bug here, the page returns access denied.
-    $this->drupalGet("node/{$post2->id()}/edit");
+    $this->content = $this->drupalGet("node/{$post2->id()}/edit");
 
     // @todo When this page is visible, figure out what default field mode is.
-    // $fields = $this->xpath('//*[@id="edit-og-group-ref-und-0-default"]');
-    // $this->assertEqual($fields[0]->option['value'], $group2->id(), '"Default" field mode is required.');
+    $fields = $this->xpath('//*[@id="edit-og-group-ref-und-0-default"]');
+    $this->assertEqual($fields[0]->option['value'], $group2->id(), '"Default" field mode is required.');
   }
 
   /**
