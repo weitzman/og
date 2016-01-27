@@ -100,6 +100,7 @@ class OgComplexWidgetTest extends BrowserTestBase {
     $this->submitForm($edit, 'Save');
     $this->assertSession()->statusCodeEquals(200);
 
+    // Retrieve the post that was created from the database.
     /** @var QueryInterface $query */
     $query = $this->container->get('entity.query')->get('node');
     $result = $query
@@ -107,14 +108,16 @@ class OgComplexWidgetTest extends BrowserTestBase {
       ->range(0, 1)
       ->sort('nid', 'DESC')
       ->execute();
-
     $post_nid = reset($result);
 
     /** @var NodeInterface $post */
     $post = Node::load($post_nid);
 
+    // Check that the post references the group correctly.
     /** @var OgMembershipReferenceItemList $reference_list */
-    $reference_list = $post->get('og_group_ref');
+    $reference_list = $post->get(OgGroupAudienceHelper::DEFAULT_FIELD);
+    $this->assertEquals(1, $reference_list->count(), 'There is 1 reference after adding a group to the "Other Groups" field.');
+    $this->assertEquals($group->id(), $reference_list->first()->getValue()['target_id'], 'The "Other Groups" field references the correct group.');
   }
 
   /**
