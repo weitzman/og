@@ -42,6 +42,13 @@ class OgComplexWidgetTest extends BrowserTestBase {
   public static $modules = ['field_ui', 'node', 'og'];
 
   /**
+   * The name of the OG group audience field.
+   *
+   * @var string
+   */
+  protected $fieldName;
+
+  /**
    * {@inheritdoc}
    */
   function setUp() {
@@ -54,7 +61,8 @@ class OgComplexWidgetTest extends BrowserTestBase {
     // Add a group audience field to the "post" node type, turning it into a
     // group content type.
     $this->createContentType(['type' => 'post']);
-    Og::createField(OgGroupAudienceHelper::DEFAULT_FIELD, 'node', 'post');
+    $this->fieldName = strtolower($this->randomMachineName());
+    Og::createField($this->fieldName, 'node', 'post');
   }
 
   /**
@@ -99,7 +107,7 @@ class OgComplexWidgetTest extends BrowserTestBase {
 
     // Check that the post references the group correctly.
     /** @var OgMembershipReferenceItemList $reference_list */
-    $reference_list = $post->get(OgGroupAudienceHelper::DEFAULT_FIELD);
+    $reference_list = $post->get($this->fieldName);
     $this->assertEquals(1, $reference_list->count(), 'There is 1 reference after adding a group to the "Other Groups" field.');
     $this->assertEquals($group->id(), $reference_list->first()->getValue()['target_id'], 'The "Other Groups" field references the correct group.');
   }
@@ -285,7 +293,7 @@ class OgComplexWidgetTest extends BrowserTestBase {
     /** @var OgMembership $membership */
     $membership = Og::membershipStorage()->create(Og::membershipDefault());
     $membership
-      ->setFieldName(OgGroupAudienceHelper::DEFAULT_FIELD)
+      ->setFieldName($this->fieldName)
       ->setMemberEntityType($member_entity->getEntityTypeId())
       ->setMemberEntityId($member_entity->id())
       ->setGroupEntityType($group_entity->getEntityTypeId())
