@@ -137,13 +137,13 @@ class OgComplexWidgetTest extends BrowserTestBase {
       // @todo I think this is obsolete.
       // OG_GROUP_FIELD . '[und][0][value]' => 1,
       'uid' => $user1->id(),
+      $this->fieldName => [['target_id' => $group1->id()]],
     ];
     $post1 = $this->createNode($settings);
-    $this->addContentToGroup($post1, $group1);
 
     $settings['uid'] = $user2->id();
+    $settings[$this->fieldName] = [['target_id' => $group2->id()]];
     $post2 = $this->createNode($settings);
-    $this->addContentToGroup($post2, $group2);
 
     $this->drupalLogin($user1);
     $this->content = $this->drupalGet("node/{$post1->id()}/edit");
@@ -289,7 +289,9 @@ class OgComplexWidgetTest extends BrowserTestBase {
    *   - OgMembershipInterface::STATE_PENDING
    *   Defaults to OgMembershipInterface::STATE_ACTIVE.
    */
-  protected function addContentToGroup(ContentEntityInterface $member_entity, ContentEntityInterface $group_entity, $state = OgMembershipInterface::STATE_ACTIVE) {
+  protected function addUserToGroup(ContentEntityInterface $member_entity, ContentEntityInterface $group_entity, $state = OgMembershipInterface::STATE_ACTIVE) {
+    // @todo repurpose this to add users as members to groups.
+    // @see https://github.com/amitaibu/og/issues/116
     /** @var OgMembership $membership */
     $membership = Og::membershipStorage()->create(Og::membershipDefault());
     $membership
