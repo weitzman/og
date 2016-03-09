@@ -42,13 +42,6 @@ class OgComplexWidgetTest extends BrowserTestBase {
   public static $modules = ['field_ui', 'node', 'og'];
 
   /**
-   * The name of the OG group audience field.
-   *
-   * @var string
-   */
-  protected $fieldName;
-
-  /**
    * {@inheritdoc}
    */
   function setUp() {
@@ -61,8 +54,7 @@ class OgComplexWidgetTest extends BrowserTestBase {
     // Add a group audience field to the "post" node type, turning it into a
     // group content type.
     $this->createContentType(['type' => 'post']);
-    $this->fieldName = strtolower($this->randomMachineName());
-    Og::createField($this->fieldName, 'node', 'post');
+    Og::createField(OgGroupAudienceHelper::DEFAULT_FIELD, 'node', 'post');
   }
 
   /**
@@ -107,7 +99,7 @@ class OgComplexWidgetTest extends BrowserTestBase {
 
     // Check that the post references the group correctly.
     /** @var OgMembershipReferenceItemList $reference_list */
-    $reference_list = $post->get($this->fieldName);
+    $reference_list = $post->get(OgGroupAudienceHelper::DEFAULT_FIELD);
     $this->assertEquals(1, $reference_list->count(), 'There is 1 reference after adding a group to the "Other Groups" field.');
     $this->assertEquals($group->id(), $reference_list->first()->getValue()['target_id'], 'The "Other Groups" field references the correct group.');
   }
@@ -137,12 +129,12 @@ class OgComplexWidgetTest extends BrowserTestBase {
       // @todo I think this is obsolete.
       // OG_GROUP_FIELD . '[und][0][value]' => 1,
       'uid' => $user1->id(),
-      $this->fieldName => [['target_id' => $group1->id()]],
+      OgGroupAudienceHelper::DEFAULT_FIELD => [['target_id' => $group1->id()]],
     ];
     $post1 = $this->createNode($settings);
 
     $settings['uid'] = $user2->id();
-    $settings[$this->fieldName] = [['target_id' => $group2->id()]];
+    $settings[OgGroupAudienceHelper::DEFAULT_FIELD] = [['target_id' => $group2->id()]];
     $post2 = $this->createNode($settings);
 
     $this->drupalLogin($user1);
@@ -295,7 +287,7 @@ class OgComplexWidgetTest extends BrowserTestBase {
     /** @var OgMembership $membership */
     $membership = Og::membershipStorage()->create(Og::membershipDefault());
     $membership
-      ->setFieldName($this->fieldName)
+      ->setFieldName(OgGroupAudienceHelper::DEFAULT_FIELD)
       ->setMemberEntityType($member_entity->getEntityTypeId())
       ->setMemberEntityId($member_entity->id())
       ->setGroupEntityType($group_entity->getEntityTypeId())
