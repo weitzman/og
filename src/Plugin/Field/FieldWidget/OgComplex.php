@@ -9,7 +9,6 @@ namespace Drupal\og\Plugin\Field\FieldWidget;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -128,18 +127,17 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
         ];
       }
 
-      $widget_one = OgGroupAudienceHelper::renderWidget('node', 'group_content', OgGroupAudienceHelper::DEFAULT_FIELD, 'options_select', []);
-      $widget_two = OgGroupAudienceHelper::renderWidget('node', 'group_content', OgGroupAudienceHelper::DEFAULT_FIELD, 'options_buttons', []);
-      $widget_three = OgGroupAudienceHelper::renderWidget('node', 'group_content', OgGroupAudienceHelper::DEFAULT_FIELD, 'entity_reference_autocomplete', []);
-      $widget_four = OgGroupAudienceHelper::renderWidget('node', 'group_content', OgGroupAudienceHelper::DEFAULT_FIELD, 'entity_reference_autocomplete_tags', []);
+      $widget_id = OgGroupAudienceHelper::getWidgets(
+        $this->fieldDefinition->getTargetEntityTypeId(),
+        $this->fieldDefinition->getTargetBundle(),
+        $this->fieldDefinition->getName(),
+        'default'
+      );
 
-      return [
-        $widget_one->formElement($items, 0, $element, $form, $form_state),
-        $widget_two->formElement($items, 0, $element, $form, $form_state),
-        $widget_three->formElement($items, 0, $element, $form, $form_state),
-        $widget_four->formElement($items, 0, $element, $form, $form_state),
-      ];
+      $element['element'] = OgGroupAudienceHelper::renderWidget($this->fieldDefinition, $widget_id)->formElement($items, 0, $element, $form, $form_state);
+      return $element;
 
+      // todo: pass to the render widget method.
 //      $element = $this->formSingleElement($items, $delta, $element, $form, $form_state);
 
       if ($element) {

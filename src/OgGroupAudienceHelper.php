@@ -8,6 +8,7 @@
 namespace Drupal\og;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldException;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\WidgetBase;
@@ -181,38 +182,33 @@ class OgGroupAudienceHelper {
   }
 
   /**
-   * @param $entity_id
-   *   The enitty type ID.
-   * @param $bundle
-   *   The entity bundle.
-   * @param $field_name
-   *   The field name.
-   * @param $values
-   *   The default values of the field.
+   * @param FieldDefinitionInterface $field
+   *   The field definition.
    * @param $widget_id
-   *   The field mode - admin or default.
+   *   An entity reference widget plugin id i.e: options_select, options_buttons.
+   * @param string $field_name
+   *   The field name. Default to self::DEFAULT_FIELD.
+   * @param array $configuration
+   *   Configuration which will be passed to the widget instance.
    *
-   * @return WidgetBase
-   *   The form API widget element.
+   * @return WidgetBase The form API widget element.
+   * The form API widget element.
    */
-  public static function renderWidget($entity_id, $bundle, $field_name, $widget_id, $values) {
-    $config = FieldConfig::load($entity_id . '.' . $bundle . '.' . $field_name);
-    $configuration = [
+  public static function renderWidget(FieldDefinitionInterface $field, $widget_id, $field_name = self::DEFAULT_FIELD, array $configuration = []) {
+    $config = FieldConfig::load($field->getTargetEntityTypeId() . '.' . $field->getTargetBundle() . '.' . $field_name);
+
+    $default_configuration = $configuration + [
       'type' => 'og_complex',
       'settings' => [
         'match_operator' => 'CONTAINS',
         'size' => 60,
         'placeholder' => '',
       ],
-      'weight' => 1,
       'third_party_settings' => [],
       'field_definition' => $config,
     ];
 
-
-    $field = \Drupal::getContainer()->get('plugin.manager.field.widget');
-
-    return $field->createInstance($widget_id, $configuration);
+    return \Drupal::getContainer()->get('plugin.manager.field.widget')->createInstance($widget_id, $default_configuration);
   }
 
 }
