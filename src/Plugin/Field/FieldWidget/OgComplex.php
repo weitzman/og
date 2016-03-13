@@ -81,7 +81,9 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       'default'
     );
 
-    if ($widget_id == 'entity_reference_autocomplete') {
+    $handler = OgGroupAudienceHelper::renderWidget($this->fieldDefinition, $widget_id);
+
+    if ($handler instanceof EntityReferenceAutocompleteWidget) {
       // No need for extra work here since we already extending the auto
       // complete handler.
       return $multiple;
@@ -98,7 +100,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       '#description' => FieldFilteredMarkup::create(\Drupal::token()->replace($this->fieldDefinition->getDescription())),
     ];
 
-    $widget = OgGroupAudienceHelper::renderWidget($this->fieldDefinition, $widget_id)->formElement($items, 0, $element, $form, $form_state);
+    $widget = $handler->formElement($items, 0, $element, $form, $form_state);
 
     if ($widget_id == 'entity_reference_autocomplete_tags') {
       // The auto complete tags widget return the form element wrapped in
