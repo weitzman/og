@@ -13,6 +13,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteTagsWidget;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteWidget;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\og\Og;
@@ -102,7 +103,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
 
     $widget = $handler->formElement($items, 0, $element, $form, $form_state);
 
-    if ($widget_id == 'entity_reference_autocomplete_tags') {
+    if ($handler instanceof EntityReferenceAutocompleteTagsWidget) {
       // The auto complete tags widget return the form element wrapped in
       // 'target_id' key. If the element won't be extracted the selected groups
       // will not processed correct.
