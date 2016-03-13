@@ -36,15 +36,6 @@ use Drupal\user\Entity\User;
 class OgComplex extends EntityReferenceAutocompleteWidget {
 
   /**
-   * Get the field definition property.
-   *
-   * @return FieldDefinitionInterface
-   */
-  public function getFieldDefinition() {
-    return $this->fieldDefinition;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
@@ -81,9 +72,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * - table display and drag-n-drop value reordering
    */
   protected function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state) {
-    $field_name = $this->fieldDefinition->getName();
     $cardinality = $this->fieldDefinition->getFieldStorageDefinition()->getCardinality();
-    $parents = $form['#parents'];
 
     $target_type = $this->fieldDefinition->getTargetEntityTypeId();
     $user_groups = Og::getEntityGroups(User::load(\Drupal::currentUser()->id()));
@@ -118,7 +107,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $widget = $widget + $element;
 
     if ($widget_id == 'entity_reference_autocomplete') {
-      OgGroupAudienceHelper::autoCompleteHelper($widget, $this, $cardinality, $field_name, $form, $form_state, $user_group_ids, $parents);
+      $this->autoCompleteHelper($widget, $items, $form, $form_state, $user_group_ids);
     }
 
     return $widget;
@@ -283,10 +272,125 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   }
 
   /**
-   * Wrapping formSingleElement method.
+   * Helper method to wrap the auto complete widget with our own logic.
+   *
+   * @param $element
+   *   The widget element.
+   * @param $form
+   *   The form API array.
+   * @param FormStateInterface $form_state
+   *   The form state object.
+   * @param $user_group_ids
+   *   The user groups IDs.
    */
-  public function getFormSingleElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    return $this->formSingleElement($items, $delta, $element, $form, $form_state);
+  protected function autoCompleteHelper(&$element, FieldItemListInterface $items, $form, FormStateInterface $form_state, $user_group_ids) {
+    $cardinality = $this->fieldDefinition->getFieldStorageDefinition()->getCardinality();
+    $field_name = $this->fieldDefinition->getName();
+    $parents = $form['#parents'];
+
+    // Determine the number of widgets to display.
+    switch ($cardinality) {
+      case FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED:
+        $field_state = OgComplex::getWidgetState($parents, $field_name, $form_state);
+        $max = $field_state['items_count'];
+        $is_multiple = TRUE;
+        break;
+
+      default:
+        $max = $cardinality - 1;
+        $is_multiple = ($cardinality > 1);
+        break;
+    }
+
+    $title = $this->fieldDefinition->getLabel();
+    $description = FieldFilteredMarkup::create(\Drupal::token()->replace($this->fieldDefinition->getDescription()));
+
+    $elements = array();
+
+    for ($delta = 0; $delta <= $max; $delta++) {
+      // Add a new empty item if it doesn't exist yet at this delta.
+      if (!isset($items[$delta])) {
+        $items->appendItem();
+      }
+      elseif (!in_array($items[$delta]->get('target_id')->getValue(), $user_group_ids)) {
+        continue;
+      }
+
+      // For multiple fields, title and description are handled by the wrapping
+      // table.
+      if ($is_multiple) {
+        $element = [
+          '#title' => $this->t('@title (value @number)', ['@title' => $title, '@number' => $delta + 1]),
+          '#title_display' => 'invisible',
+          '#description' => '',
+        ];
+      }
+      else {
+        $element = [
+          '#title' => $title,
+          '#title_display' => 'before',
+          '#description' => $description,
+        ];
+      }
+
+      $element = $this->FormSingleElement($items, $delta, $element, $form, $form_state);
+
+      if ($element) {
+        // Input field for the delta (drag-n-drop reordering).
+        if ($is_multiple) {
+          // We name the element '_weight' to avoid clashing with elements
+          // defined by widget.
+          $element['_weight'] = array(
+            '#type' => 'weight',
+            '#title' => $this->t('Weight for row @number', array('@number' => $delta + 1)),
+            '#title_display' => 'invisible',
+            // Note: this 'delta' is the FAPI #type 'weight' element's property.
+            '#delta' => $max,
+            '#default_value' => $items[$delta]->_weight ?: $delta,
+            '#weight' => 100,
+          );
+        }
+
+        $elements[$delta] = $element;
+      }
+    }
+
+    if ($elements) {
+      $elements += array(
+        '#theme' => 'field_multiple_value_form',
+        '#field_name' => $field_name,
+        '#cardinality' => $cardinality,
+        '#cardinality_multiple' => $this->fieldDefinition->getFieldStorageDefinition()->isMultiple(),
+        '#required' => $this->fieldDefinition->isRequired(),
+        '#title' => $title,
+        '#description' => $description,
+        '#max_delta' => $max,
+      );
+
+      // Add 'add more' button, if not working with a programmed form.
+      if ($cardinality == FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED && !$form_state->isProgrammed()) {
+        $id_prefix = implode('-', array_merge($parents, array($field_name)));
+        $wrapper_id = Html::getUniqueId($id_prefix . '-add-more-wrapper');
+        $elements['#prefix'] = '<div id="' . $wrapper_id . '">';
+        $elements['#suffix'] = '</div>';
+
+        $elements['add_more'] = array(
+          '#type' => 'submit',
+          '#name' => strtr($id_prefix, '-', '_') . '_add_more',
+          '#value' => t('Add another item'),
+          '#attributes' => array('class' => array('field-add-more-submit')),
+          '#limit_validation_errors' => array(array_merge($parents, array($field_name))),
+          '#submit' => array(array(get_class($this), 'addMoreSubmit')),
+          '#ajax' => array(
+            'callback' => array(get_class($this), 'addMoreAjax'),
+            'wrapper' => $wrapper_id,
+            'effect' => 'fade',
+          ),
+        );
+      }
+    }
+
+    $element = $elements;
   }
 
 }

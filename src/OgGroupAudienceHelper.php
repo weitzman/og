@@ -11,6 +11,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldException;
 use Drupal\Core\Field\FieldFilteredMarkup;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -212,130 +213,6 @@ class OgGroupAudienceHelper {
     ];
 
     return \Drupal::getContainer()->get('plugin.manager.field.widget')->createInstance($widget_id, $default_configuration);
-  }
-
-  /**
-   * Helper method to wrap the auto complete widget with our own logic.
-   *
-   * @param $element
-   *   The widget element.
-   * @param OgComplex $ogComplex
-   *   OG field widget handler.
-   * @param $cardinality
-   *   The field cardinality.
-   * @param $field_name
-   *   The field name.
-   * @param $form
-   *   The form API array.
-   * @param FormStateInterface $form_state
-   *   The form state object.
-   * @param $user_group_ids
-   *   The user groups IDs.
-   * @param $parents
-   *   The #parents form attribute.
-   */
-  public static function autoCompleteHelper(&$element, OgComplex $ogComplex, $cardinality, $field_name, $form, FormStateInterface $form_state, $user_group_ids, $parents) {
-    // Determine the number of widgets to display.
-    switch ($cardinality) {
-      case FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED:
-        $field_state = OgComplex::getWidgetState($parents, $field_name, $form_state);
-        $max = $field_state['items_count'];
-        $is_multiple = TRUE;
-        break;
-
-      default:
-        $max = $cardinality - 1;
-        $is_multiple = ($cardinality > 1);
-        break;
-    }
-
-    $title = $ogComplex->getFieldDefinition()->getLabel();
-    $description = FieldFilteredMarkup::create(\Drupal::token()->replace($ogComplex->getfieldDefinition()->getDescription()));
-
-    $elements = array();
-
-    for ($delta = 0; $delta <= $max; $delta++) {
-      // Add a new empty item if it doesn't exist yet at this delta.
-      if (!isset($items[$delta])) {
-        $items->appendItem();
-      }
-      elseif (!in_array($items[$delta]->get('target_id')->getValue(), $user_group_ids)) {
-        continue;
-      }
-
-      // For multiple fields, title and description are handled by the wrapping
-      // table.
-      if ($is_multiple) {
-        $element = [
-          '#title' => $ogComplex->t('@title (value @number)', ['@title' => $title, '@number' => $delta + 1]),
-          '#title_display' => 'invisible',
-          '#description' => '',
-        ];
-      }
-      else {
-        $element = [
-          '#title' => $title,
-          '#title_display' => 'before',
-          '#description' => $description,
-        ];
-      }
-
-      $element = $ogComplex->getFormSingleElement($items, $delta, $element, $form, $form_state);
-
-      if ($element) {
-        // Input field for the delta (drag-n-drop reordering).
-        if ($is_multiple) {
-          // We name the element '_weight' to avoid clashing with elements
-          // defined by widget.
-          $element['_weight'] = array(
-            '#type' => 'weight',
-            '#title' => $ogComplex->t('Weight for row @number', array('@number' => $delta + 1)),
-            '#title_display' => 'invisible',
-            // Note: this 'delta' is the FAPI #type 'weight' element's property.
-            '#delta' => $max,
-            '#default_value' => $items[$delta]->_weight ?: $delta,
-            '#weight' => 100,
-          );
-        }
-
-        $elements[$delta] = $element;
-      }
-    }
-
-    if ($elements) {
-      $elements += array(
-        '#theme' => 'field_multiple_value_form',
-        '#field_name' => $field_name,
-        '#cardinality' => $cardinality,
-        '#cardinality_multiple' => $ogComplex->getFieldDefinition()->getFieldStorageDefinition()->isMultiple(),
-        '#required' => $ogComplex->getFieldDefinition()->isRequired(),
-        '#title' => $title,
-        '#description' => $description,
-        '#max_delta' => $max,
-      );
-
-      // Add 'add more' button, if not working with a programmed form.
-      if ($cardinality == FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED && !$form_state->isProgrammed()) {
-        $id_prefix = implode('-', array_merge($parents, array($field_name)));
-        $wrapper_id = Html::getUniqueId($id_prefix . '-add-more-wrapper');
-        $elements['#prefix'] = '<div id="' . $wrapper_id . '">';
-        $elements['#suffix'] = '</div>';
-
-        $elements['add_more'] = array(
-          '#type' => 'submit',
-          '#name' => strtr($id_prefix, '-', '_') . '_add_more',
-          '#value' => t('Add another item'),
-          '#attributes' => array('class' => array('field-add-more-submit')),
-          '#limit_validation_errors' => array(array_merge($parents, array($field_name))),
-          '#submit' => array(array(get_class($ogComplex), 'addMoreSubmit')),
-          '#ajax' => array(
-            'callback' => array(get_class($ogComplex), 'addMoreAjax'),
-            'wrapper' => $wrapper_id,
-            'effect' => 'fade',
-          ),
-        );
-      }
-    }
   }
 
 }
