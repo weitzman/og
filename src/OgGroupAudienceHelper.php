@@ -16,6 +16,7 @@ use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormState;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\og\Plugin\Field\FieldWidget\OgComplex;
+use Drupal\Component\Utility\Html;
 
 /**
  * OG audience field helper methods.
