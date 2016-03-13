@@ -14,6 +14,7 @@ use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\og\Plugin\Field\FieldWidget\OgComplex;
 use Drupal\Component\Utility\Html;
@@ -214,11 +215,31 @@ class OgGroupAudienceHelper {
     return \Drupal::getContainer()->get('plugin.manager.field.widget')->createInstance($widget_id, $default_configuration);
   }
 
-  public static function autoCompleteHelper(&$element, OgComplex $ogComplex, $cardinality, $field_name, FormState $form_state, $user_group_ids, $parents) {
+  /**
+   * Helper method to wrap the auto complete widget with our own logic.
+   *
+   * @param $element
+   *   The widget element.
+   * @param OgComplex $ogComplex
+   *   OG field widget handler.
+   * @param $cardinality
+   *   The field cardinality.
+   * @param $field_name
+   *   The field name.
+   * @param $form
+   *   The form API array.
+   * @param FormStateInterface $form_state
+   *   The form state object.
+   * @param $user_group_ids
+   *   The user groups IDs.
+   * @param $parents
+   *   The #parents form attribute.
+   */
+  public static function autoCompleteHelper(&$element, OgComplex $ogComplex, $cardinality, $field_name, $form, FormStateInterface $form_state, $user_group_ids, $parents) {
     // Determine the number of widgets to display.
     switch ($cardinality) {
       case FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED:
-        $field_state = static::getWidgetState($parents, $field_name, $form_state);
+        $field_state = OgComplex::getWidgetState($parents, $field_name, $form_state);
         $max = $field_state['items_count'];
         $is_multiple = TRUE;
         break;
@@ -260,7 +281,7 @@ class OgGroupAudienceHelper {
         ];
       }
 
-      $element = $ogComplex->formSingleElement($items, $delta, $element, $form, $form_state);
+      $element = $ogComplex->getFormSingleElement($items, $delta, $element, $form, $form_state);
 
       if ($element) {
         // Input field for the delta (drag-n-drop reordering).

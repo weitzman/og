@@ -109,7 +109,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $widget = OgGroupAudienceHelper::renderWidget($this->fieldDefinition, $widget_id)->formElement($items, 0, $element, $form, $form_state) + $element;
 
     if ($widget_id == 'entity_reference_autocomplete') {
-      OgGroupAudienceHelper::autoCompleteHelper($widget);
+      OgGroupAudienceHelper::autoCompleteHelper($widget, $this, $cardinality, $field_name, $form, $form_state, $user_group_ids, $parents);
     }
 
     return $widget;
@@ -271,6 +271,13 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   protected function isGroupAdmin() {
     // @todo Inject current user service as a dependency.
     return \Drupal::currentUser()->hasPermission(OgAccess::ADMINISTER_GROUP_PERMISSION);
+  }
+
+  /**
+   * Wrapping formSingleElement method.
+   */
+  public function getFormSingleElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+    return $this->formSingleElement($items, $delta, $element, $form, $form_state);
   }
 
 }
