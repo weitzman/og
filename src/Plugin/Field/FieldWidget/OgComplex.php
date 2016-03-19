@@ -7,11 +7,8 @@
 
 namespace Drupal\og\Plugin\Field\FieldWidget;
 
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteTagsWidget;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteWidget;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\OptionsButtonsWidget;
@@ -56,11 +53,11 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   public function form(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
     $parent_form = parent::form($items, $form, $form_state, $get_delta);
 
-    $parent_form['other_groups'] = [];
+    $parent_form[$this->fieldDefinition->getFieldStorageDefinition()->getName() . '_other_groups'] = [];
 
     // Adding the other groups widget.
     if ($this->isGroupAdmin()) {
-      $parent_form['other_groups'] = $this->otherGroupsWidget($items, $form, $form_state);
+      $parent_form[$this->fieldDefinition->getFieldStorageDefinition()->getName() . '_other_groups'] = $this->otherGroupsWidget($items, $form, $form_state);
     }
 
     return $parent_form;
@@ -89,7 +86,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     if ($handler instanceof EntityReferenceAutocompleteWidget) {
       // No need for extra work here since we already extending the auto
       // complete handler.
-      return $multiple;
+      return $this->clearGroups($multiple, $this->getUserGroups(), $handler);
     }
 
     // Change the functionality of the original handler and call the other
@@ -149,7 +146,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       $widget = $handler->formElement($items, 0, $element, $form, $form_state);
     }
 
-    return $this->clearGroups($widget, $this->getOtherGroups(), $handler);
+    return $this->clearGroups($widget, $this->getOtherGroups(), $handler, TRUE);
   }
 
   /**
@@ -162,11 +159,13 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    *   The groups IDs need to keep.
    * @param WidgetBase $handler
    *   The handler object.
+   * @param $other_groups
+   *   Determine if we displayed other groups or not.
    *
    * @return mixed
    *   Form API element.
    */
-  protected function clearGroups($widget, array $allowed_gids, WidgetBase $handler) {
+  protected function clearGroups($widget, array $allowed_gids, WidgetBase $handler, $other_groups = FALSE) {
 
     if ($handler instanceof OptionsButtonsWidget) {
       $widget['#options'] = array_filter($widget['#options'], function($key) use($allowed_gids) {
@@ -184,12 +183,20 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
           continue;
         }
 
+        if ($entity = $value['target_id']['#default_value']) {
+          if (!in_array($entity->id(), $allowed_gids)) {
+            unset($widget[$key]);
+            continue;
+          }
+        }
+
         $value['target_id']['#selection_handler'] = 'og:default';
         $value['target_id']['#selection_settings'] = [
-          'other_groups' => TRUE,
-          'field_mode' => 'admin',
+          'other_groups' => $other_groups,
+          'field_mode' => !$other_groups ? 'default' : 'admin',
         ];
       }
+
     }
 
     return $widget;
@@ -216,6 +223,19 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   }
 
   /**
+   * Get the user's group IDs.
+   */
+  protected function getUserGroups() {
+    $ids = [];
+
+    foreach (Og::getEntityGroups(User::load(\Drupal::currentUser()->id()))[$this->getFieldSetting('handler_settings')['target_type']] as $group) {
+      $ids[] = $group->id();
+    }
+
+    return $ids;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
@@ -224,23 +244,8 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       return !empty($item['target_id']);
     });
 
-    // Get the groups from the other groups widget.
-    foreach ($form[$this->fieldDefinition->getName()]['other_groups'] as $key => $value) {
-      if (!is_int($key)) {
-        continue;
-      }
-
-      // Matches the entity label and ID. E.g. 'Label (123)'. The entity ID will
-      // be captured in it's own group, with the key 'id'.
-      preg_match("|.+\((?<id>[\w.]+)\)|", $value['target_id']['#value'], $matches);
-
-      if (!empty($matches['id'])) {
-        $values[] = [
-          'target_id' => $matches['id'],
-          '_weight' => $value['_weight']['#value'],
-          '_original_delta' => $value['_weight']['#delta'],
-        ];
-      }
+    foreach ($form_state->getValue($this->fieldDefinition->getName() . '_other_groups') as $other_group) {
+      $values[] = $other_group['target_id'];
     }
 
     return $values;
