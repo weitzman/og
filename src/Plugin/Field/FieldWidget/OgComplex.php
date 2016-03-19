@@ -197,6 +197,13 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
         ];
       }
 
+      if ($other_groups) {
+        $widget['#prefix'] = '<div id="og-group-ref-other-groups-add-more-wrapper">';
+        $widget['add_more']['#name'] = 'og_group_ref_other_groups_add_more';
+        $widget['add_more']['#ajax']['wrapper'] = 'og-group-ref-other-groups-add-more-wrapper';
+        dpm($widget);
+      }
+
     }
 
     return $widget;
