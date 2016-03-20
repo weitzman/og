@@ -15,7 +15,6 @@ use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteTagsWi
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteWidget;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\node\Entity\Node;
 use Drupal\og\Og;
 use Drupal\og\OgAccess;
 use Drupal\og\OgGroupAudienceHelper;
@@ -73,7 +72,8 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    */
   protected function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state) {
 
-    $multiple = parent::formMultipleElements($this->getAutoCompleteItems($items, $form, $form_state), $form, $form_state);
+    $items_new = $this->getAutoCompleteItems($items, $form, $form_state);
+    $multiple = parent::formMultipleElements($items_new, $form, $form_state);
 
     $widget_id = OgGroupAudienceHelper::getWidgets(
       $this->fieldDefinition->getTargetEntityTypeId(),
@@ -143,9 +143,10 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $this->fieldDefinition->otherGroup = TRUE;
 
     $handler = OgGroupAudienceHelper::renderWidget($this->fieldDefinition, $widget_id);
+    $items = $this->getAutoCompleteItems($items, $form, $form_state, TRUE);
 
     if ($handler instanceof EntityReferenceAutocompleteWidget && $cardinality) {
-      $widget = $handler->formMultipleElements($this->getAutoCompleteItems($items, $form, $form_state, TRUE), $form, $form_state);
+      $widget = $handler->formMultipleElements($items, $form, $form_state);
     }
     else {
       $widget = $handler->formElement($items, 0, $element, $form, $form_state);
@@ -168,7 +169,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * @return mixed
    *   Form API element.
    */
-  protected function clearGroups($widget, WidgetBase $handler, $other_groups = FALSE, FormStateInterface $form_state = null) {
+  protected function clearGroups($widget, WidgetBase $handler, $other_groups = FALSE) {
     if ($handler instanceof EntityReferenceAutocompleteWidget) {
       foreach ($widget as $key => &$value) {
         if (!is_int($key)) {
@@ -242,15 +243,18 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * @return FieldItemListInterface
    */
   protected function getAutoCompleteItems(FieldItemListInterface $items, $form, FormStateInterface $form_state, $other_groups = FALSE) {
+    $new_items = clone $items;
     // Get the groups which already referenced.
     $referenced_groups_ids = [];
 
-    foreach ($items->getEntity()->get($this->fieldDefinition->getName())->referencedEntities() as $entity) {
+    foreach ($new_items->getEntity()->get($this->fieldDefinition->getName())->referencedEntities() as $entity) {
       $referenced_groups_ids[] = $entity->id();
     }
+    $referenced_groups_ids = array_unique($referenced_groups_ids);
 
     // Get all the entities we can referenced to.
-    $referenceable_groups = Og::getSelectionHandler($this->fieldDefinition, ['handler_settings' => ['field_mode' => $other_groups ? 'admin' : 'default']])->getReferenceableEntities();
+    $field_mode = $other_groups ? 'admin' : 'default';
+    $referenceable_groups = Og::getSelectionHandler($this->fieldDefinition, ['handler_settings' => ['field_mode' => $field_mode]])->getReferenceableEntities();
 
     $gids = [];
     $handler_settings = $this->fieldDefinition->getSetting('handler_settings');
@@ -266,13 +270,15 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       ->getStorage($handler_settings['target_type'])
       ->loadMultiple($entity_ids);
 
-    $items->setValue($entities);
+    $new_items->setValue($entities);
 
-    $field_state = static::getWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state);
-    $field_state['items_count'] = count($entities);
-    static::setWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state, $field_state);
+    if (!$form_state->getTriggeringElement()) {
+      $field_state = static::getWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state);
+      $field_state['items_count'] = count($entities);
+      static::setWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state, $field_state);
+    }
 
-    return $items;
+    return $new_items;
   }
 
 }
