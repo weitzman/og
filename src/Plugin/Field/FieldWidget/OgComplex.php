@@ -145,7 +145,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $handler = OgGroupAudienceHelper::renderWidget($this->fieldDefinition, $widget_id);
 
     if ($handler instanceof EntityReferenceAutocompleteWidget && $cardinality) {
-      $widget = $handler->formMultipleElements($items, $form, $form_state);
+      $widget = $handler->formMultipleElements($this->getAutoCompleteItems($items, $form, $form_state, TRUE), $form, $form_state);
     }
     else {
       $widget = $handler->formElement($items, 0, $element, $form, $form_state);
@@ -240,7 +240,6 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
 
   /**
    * @return FieldItemListInterface
-   *
    */
   protected function getAutoCompleteItems(FieldItemListInterface $items, $form, FormStateInterface $form_state, $other_groups = FALSE) {
     // Get the groups which already referenced.
@@ -254,20 +253,24 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $referenceable_groups = Og::getSelectionHandler($this->fieldDefinition, ['handler_settings' => ['field_mode' => $other_groups ? 'admin' : 'default']])->getReferenceableEntities();
 
     $gids = [];
-    foreach ($this->fieldDefinition->getSetting('handler_settings')['target_bundles'] as $target_bundle) {
+    $handler_settings = $this->fieldDefinition->getSetting('handler_settings');
+    foreach ($handler_settings['target_bundles'] as $target_bundle) {
       $gids += array_keys($referenceable_groups[$target_bundle]);
     }
-    dpm([$gids, $referenced_groups_ids]);
 
-//    dpm([$referenced_groups_ids, $groups]);
+    $entity_ids = array_filter($gids, function($gids) use($referenced_groups_ids) {
+      return in_array($gids, $referenced_groups_ids) ? $gids : NULL;
+    });
 
-//    $entities = Node::loadMultiple([1, 2]);
-//
-//    $items->setValue($entities);
+    $entities = \Drupal::entityTypeManager()
+      ->getStorage($handler_settings['target_type'])
+      ->loadMultiple($entity_ids);
 
-//    $field_state = static::getWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state);
-//    $field_state['items_count'] = count($entities);
-//    static::setWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state, $field_state);
+    $items->setValue($entities);
+
+    $field_state = static::getWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state);
+    $field_state['items_count'] = count($entities);
+    static::setWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state, $field_state);
 
     return $items;
   }
