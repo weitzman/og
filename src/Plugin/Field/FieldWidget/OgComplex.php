@@ -7,18 +7,18 @@
 
 namespace Drupal\og\Plugin\Field\FieldWidget;
 
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteTagsWidget;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteWidget;
-use Drupal\Core\Field\Plugin\Field\FieldWidget\OptionsButtonsWidget;
-use Drupal\Core\Field\Plugin\Field\FieldWidget\OptionsSelectWidget;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\Entity\Node;
 use Drupal\og\Og;
 use Drupal\og\OgAccess;
 use Drupal\og\OgGroupAudienceHelper;
-use Drupal\user\Entity\User;
 
 /**
  * Plugin implementation of the 'entity_reference autocomplete' widget.
@@ -72,7 +72,8 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * - table display and drag-n-drop value reordering
    */
   protected function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state) {
-    $multiple = parent::formMultipleElements($items, $form, $form_state);
+
+    $multiple = parent::formMultipleElements($this->getAutoCompleteItems($items, $form, $form_state), $form, $form_state);
 
     $widget_id = OgGroupAudienceHelper::getWidgets(
       $this->fieldDefinition->getTargetEntityTypeId(),
@@ -86,7 +87,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     if ($handler instanceof EntityReferenceAutocompleteWidget) {
       // No need for extra work here since we already extending the auto
       // complete handler.
-      return $this->clearGroups($multiple, $this->getUserGroups(), $handler);
+      return $this->clearGroups($multiple, $handler);
     }
 
     // Change the functionality of the original handler and call the other
@@ -111,14 +112,16 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
 
     $widget = $widget + $element;
 
-    return [$widget];
+    return $widget;
   }
 
   /**
    * Adding the other groups widget to the form.
    *
-   * @param $elements
-   *   The widget array.
+   * @param FieldItemListInterface $items
+   * @param array $form
+   * @param FormStateInterface $form_state
+   * @return mixed
    */
   protected function otherGroupsWidget(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
 
@@ -137,6 +140,8 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       '#description' => FieldFilteredMarkup::create(\Drupal::token()->replace($this->fieldDefinition->getDescription())),
     ];
 
+    $this->fieldDefinition->otherGroup = TRUE;
+
     $handler = OgGroupAudienceHelper::renderWidget($this->fieldDefinition, $widget_id);
 
     if ($handler instanceof EntityReferenceAutocompleteWidget && $cardinality) {
@@ -146,7 +151,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       $widget = $handler->formElement($items, 0, $element, $form, $form_state);
     }
 
-    return $this->clearGroups($widget, $this->getOtherGroups(), $handler, TRUE);
+    return $this->clearGroups($widget, $handler, TRUE, $form_state);
   }
 
   /**
@@ -155,8 +160,6 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    *
    * @param $widget
    *   The form API element.
-   * @param array $allowed_gids
-   *   The groups IDs need to keep.
    * @param WidgetBase $handler
    *   The handler object.
    * @param $other_groups
@@ -165,29 +168,11 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * @return mixed
    *   Form API element.
    */
-  protected function clearGroups($widget, array $allowed_gids, WidgetBase $handler, $other_groups = FALSE) {
-
-    if ($handler instanceof OptionsButtonsWidget) {
-      $widget['#options'] = array_filter($widget['#options'], function($key) use($allowed_gids) {
-        return in_array($key, $allowed_gids);
-      }, ARRAY_FILTER_USE_KEY);
-    }
-    elseif ($handler instanceof OptionsSelectWidget) {
-      $widget['#options'] = ['_none' => $this->t('- None -')] + array_filter($widget['#options'], function($key) use($allowed_gids) {
-          return in_array($key, $allowed_gids);
-        }, ARRAY_FILTER_USE_KEY);
-    }
-    elseif ($handler instanceof EntityReferenceAutocompleteWidget) {
+  protected function clearGroups($widget, WidgetBase $handler, $other_groups = FALSE, FormStateInterface $form_state = null) {
+    if ($handler instanceof EntityReferenceAutocompleteWidget) {
       foreach ($widget as $key => &$value) {
         if (!is_int($key)) {
           continue;
-        }
-
-        if ($entity = $value['target_id']['#default_value']) {
-          if (!in_array($entity->id(), $allowed_gids)) {
-            unset($widget[$key]);
-            continue;
-          }
         }
 
         $value['target_id']['#selection_handler'] = 'og:default';
@@ -197,49 +182,9 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
         ];
       }
 
-      if ($other_groups) {
-        $widget['#prefix'] = '<div id="og-group-ref-other-groups-add-more-wrapper">';
-        $widget['add_more']['#name'] = 'og_group_ref_other_groups_add_more';
-        $widget['add_more']['#ajax']['wrapper'] = 'og-group-ref-other-groups-add-more-wrapper';
-        dpm($widget);
-      }
-
     }
 
     return $widget;
-  }
-
-  /**
-   * Get the other groups IDs.
-   *
-   * @return array
-   *   Other groups IDs.
-   *
-   * @throws \Exception
-   */
-  protected function getOtherGroups() {
-    $groups = Og::getSelectionHandler($this->fieldDefinition, ['handler_settings' => ['field_mode' => 'admin']])->getReferenceableEntities();
-
-    $gids = [];
-
-    foreach ($this->getFieldSetting('handler_settings')['target_bundles'] as $target_bundle) {
-      $gids += array_keys($groups[$target_bundle]);
-    }
-
-    return $gids;
-  }
-
-  /**
-   * Get the user's group IDs.
-   */
-  protected function getUserGroups() {
-    $ids = [];
-
-    foreach (Og::getEntityGroups(User::load(\Drupal::currentUser()->id()))[$this->getFieldSetting('handler_settings')['target_type']] as $group) {
-      $ids[] = $group->id();
-    }
-
-    return $ids;
   }
 
   /**
@@ -266,6 +211,65 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   protected function isGroupAdmin() {
     // @todo Inject current user service as a dependency.
     return \Drupal::currentUser()->hasPermission(OgAccess::ADMINISTER_GROUP_PERMISSION);
+  }
+
+  /**
+   * Ajax callback for the "Add another item" button.
+   *
+   * This returns the new page content to replace the page content made obsolete
+   * by the form submission.
+   */
+  public static function addMoreAjax(array $form, FormStateInterface $form_state) {
+    $button = $form_state->getTriggeringElement();
+
+    // Go one level up in the form, to the widgets container.
+    $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -1));
+
+    // Ensure the widget allows adding additional items.
+    if ($element['#cardinality'] != FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
+      return;
+    }
+
+    // Add a DIV around the delta receiving the Ajax effect.
+    $delta = $element['#max_delta'];
+    $element[$delta]['#prefix'] = '<div class="ajax-new-content">' . (isset($element[$delta]['#prefix']) ? $element[$delta]['#prefix'] : '');
+    $element[$delta]['#suffix'] = (isset($element[$delta]['#suffix']) ? $element[$delta]['#suffix'] : '') . '</div>';
+
+    return $element;
+  }
+
+  /**
+   * @return FieldItemListInterface
+   *
+   */
+  protected function getAutoCompleteItems(FieldItemListInterface $items, $form, FormStateInterface $form_state, $other_groups = FALSE) {
+    // Get the groups which already referenced.
+    $referenced_groups_ids = [];
+
+    foreach ($items->getEntity()->get($this->fieldDefinition->getName())->referencedEntities() as $entity) {
+      $referenced_groups_ids[] = $entity->id();
+    }
+
+    // Get all the entities we can referenced to.
+    $referenceable_groups = Og::getSelectionHandler($this->fieldDefinition, ['handler_settings' => ['field_mode' => $other_groups ? 'admin' : 'default']])->getReferenceableEntities();
+
+    $gids = [];
+    foreach ($this->fieldDefinition->getSetting('handler_settings')['target_bundles'] as $target_bundle) {
+      $gids += array_keys($referenceable_groups[$target_bundle]);
+    }
+    dpm([$gids, $referenced_groups_ids]);
+
+//    dpm([$referenced_groups_ids, $groups]);
+
+//    $entities = Node::loadMultiple([1, 2]);
+//
+//    $items->setValue($entities);
+
+//    $field_state = static::getWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state);
+//    $field_state['items_count'] = count($entities);
+//    static::setWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state, $field_state);
+
+    return $items;
   }
 
 }
