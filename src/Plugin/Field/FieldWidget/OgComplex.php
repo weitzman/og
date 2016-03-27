@@ -7,7 +7,9 @@
 
 namespace Drupal\og\Plugin\Field\FieldWidget;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -148,7 +150,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $widget = $handler->formElement($items, 0, $element, $form, $form_state);
 
     if ($handler instanceof EntityReferenceAutocompleteWidget) {
-      return $this->AutoCompleteHandler($widget, $handler);
+      return $this->AutoCompleteHandler($items, $handler);
     }
 
     return $widget;
@@ -157,40 +159,85 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   /**
    * Creating a custom auto complete widget for the other groups widget.
    *
-   * @param $widget
-   *   The form API element.
-   * @param WidgetBase $handler
-   *   The handler object.
+   * @param FieldItemListInterface $items
+   *   The field items.
    *
    * @return mixed
    *   Form API element.
    */
-  protected function AutoCompleteHandler($widget, WidgetBase $handler) {
+  protected function AutoCompleteHandler(FieldItemListInterface $items, WidgetBase $handler) {
+
+    $field_wrapper = Html::getClass($this->fieldDefinition->getName()) . '-add-another-group';
+
+    if ($this->fieldDefinition->getTargetEntityTypeId() == 'user') {
+      $description = $this->t('As groups administrator, associate this user with groups you do <em>not</em> belong to.');
+    }
+    else {
+      $description = $this->t('As groups administrator, associate this content with groups you do <em>not</em> belong to.');
+    }
+
+    $widget = [
+      '#type' => 'container',
+      '#tree' => TRUE,
+      '#title' => $this->t('Other groups'),
+      '#description' => $description,
+      '#prefix' => '<div id="' . $field_wrapper . '">',
+      '#suffix' => '</div>',
+      '#cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
+      '#cardinality_multiple' => TRUE,
+      '#theme' => 'field_multiple_value_form',
+      '#field_name' => $this->fieldDefinition->getName() . '_other_group',
+      '#max_delta' => 1,
+    ];
+
     // Wrapping the element with array and #tree => TRUE will make sure FAPI
     // will pass the selected group in array. We need this to so for
     // self::massageFormValues() will treat all the other group widget the same.
-    $widget = [$widget] + [
-      '#tree' => TRUE,
-    ];
+    $elements = [];
 
-    foreach ($widget as $key => &$value) {
-      if (!is_int($key)) {
-        continue;
-      }
-
-      $value['target_id']['#selection_handler'] = 'og:default';
-      $value['target_id']['#selection_settings'] = [
-        'other_groups' => TRUE,
-        'field_mode' => 'admin',
-      ];
+    foreach ($items->referencedEntities() as $key => $item) {
+      $elements[] = $this->otherGroupsSingle($key, $item);
     }
 
-    if (!$widget['target_id']['#multiple']) {
-      // Not a field with a multiple cardinality. Return a single element form.
-      return $widget;
-    }
+    // Add another item.
+    $elements[] = $this->otherGroupsSingle($key + 1);
+
+    $widget += $elements;
 
     return $widget;
+  }
+
+  /**
+   * Generating other groups auto complete element.
+   *
+   * @param $delta
+   *   The delta of the new element. Need to be the last delta in order to be
+   *   added in the end of the list.
+   * @param EntityInterface|NULL $entity
+   *   The entity object.
+   * @return array
+   *   A single entity reference input.
+   */
+  public function otherGroupsSingle($delta, EntityInterface $entity = NULL, $weight_delta = 10) {
+    return [
+      'target_id' => [
+        // @todo Allow this to be configurable with a widget setting.
+        '#type' => 'entity_autocomplete',
+        '#target_type' => $this->fieldDefinition->getTargetEntityTypeId(),
+        '#selection_handler' => 'og:default',
+        '#selection_settings' => [
+          'other_groups' => TRUE,
+          'field_mode' => 'admin',
+        ],
+        '#default_value' => $entity,
+      ],
+      '_weight' => [
+        '#type' => 'weight',
+        '#title_display' => 'invisible',
+        '#delta' => $weight_delta,
+        '#default_value' => $delta,
+      ],
+    ];
   }
 
   /**
@@ -202,11 +249,9 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       return !empty($item['target_id']);
     });
 
-    dpm($form_state->getValue($this->fieldDefinition->getName() . '_other_groups'));
-
-//    foreach ($form_state->getValue($this->fieldDefinition->getName() . '_other_groups') as $other_group) {
-//      $values[] = $other_group['target_id'];
-//    }
+    foreach ($form_state->getValue($this->fieldDefinition->getName() . '_other_groups') as $other_group) {
+      $values[] = $other_group;
+    }
 
     return $values;
   }
