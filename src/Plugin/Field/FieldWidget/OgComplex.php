@@ -147,7 +147,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
 
     $widget = $handler->formElement($items, 0, $element, $form, $form_state);
 
-    if ($handler instanceof EntityReferenceAutocompleteWidget && $cardinality) {
+    if ($handler instanceof EntityReferenceAutocompleteWidget) {
       return $this->AutoCompleteHandler($widget, $handler);
     }
 
@@ -155,8 +155,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   }
 
   /**
-   * When rendering a widget we get the referenced groups. This methods will
-   * remove the groups we don't want from the selections.
+   * Creating a custom auto complete widget for the other groups widget.
    *
    * @param $widget
    *   The form API element.
@@ -167,7 +166,13 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    *   Form API element.
    */
   protected function AutoCompleteHandler($widget, WidgetBase $handler) {
-    $widget = [$widget];
+    // Wrapping the element with array and #tree => TRUE will make sure FAPI
+    // will pass the selected group in array. We need this to so for
+    // self::massageFormValues() will treat all the other group widget the same.
+    $widget = [$widget] + [
+      '#tree' => TRUE,
+    ];
+
     foreach ($widget as $key => &$value) {
       if (!is_int($key)) {
         continue;
@@ -180,7 +185,10 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       ];
     }
 
-    $widget = $widget + ['#tree' => TRUE];
+    if (!$widget['target_id']['#multiple']) {
+      // Not a field with a multiple cardinality. Return a single element form.
+      return $widget;
+    }
 
     return $widget;
   }
@@ -194,9 +202,11 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       return !empty($item['target_id']);
     });
 
-    foreach ($form_state->getValue($this->fieldDefinition->getName() . '_other_groups') as $other_group) {
-      $values[] = $other_group['target_id'];
-    }
+    dpm($form_state->getValue($this->fieldDefinition->getName() . '_other_groups'));
+
+//    foreach ($form_state->getValue($this->fieldDefinition->getName() . '_other_groups') as $other_group) {
+//      $values[] = $other_group['target_id'];
+//    }
 
     return $values;
   }
