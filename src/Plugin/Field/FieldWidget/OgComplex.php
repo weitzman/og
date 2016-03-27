@@ -87,7 +87,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     if ($handler instanceof EntityReferenceAutocompleteWidget) {
       // No need for extra work here since we already extending the auto
       // complete handler.
-      return $this->clearGroups($multiple, $handler);
+      return $multiple;
     }
 
     // Change the functionality of the original handler and call the other
@@ -145,14 +145,13 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $handler = OgGroupAudienceHelper::renderWidget($this->fieldDefinition, $widget_id);
     $items = $this->getAutoCompleteItems($items, $form, $form_state, TRUE);
 
+    $widget = $handler->formElement($items, 0, $element, $form, $form_state);
+
     if ($handler instanceof EntityReferenceAutocompleteWidget && $cardinality) {
-      $widget = $handler->formMultipleElements($items, $form, $form_state);
-    }
-    else {
-      $widget = $handler->formElement($items, 0, $element, $form, $form_state);
+      return $this->AutoCompleteHandler($widget, $handler);
     }
 
-    return $this->clearGroups($widget, $handler, TRUE, $form_state);
+    return $widget;
   }
 
   /**
@@ -163,27 +162,25 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    *   The form API element.
    * @param WidgetBase $handler
    *   The handler object.
-   * @param $other_groups
-   *   Determine if we displayed other groups or not.
    *
    * @return mixed
    *   Form API element.
    */
-  protected function clearGroups($widget, WidgetBase $handler, $other_groups = FALSE) {
-    if ($handler instanceof EntityReferenceAutocompleteWidget) {
-      foreach ($widget as $key => &$value) {
-        if (!is_int($key)) {
-          continue;
-        }
-
-        $value['target_id']['#selection_handler'] = 'og:default';
-        $value['target_id']['#selection_settings'] = [
-          'other_groups' => $other_groups,
-          'field_mode' => !$other_groups ? 'default' : 'admin',
-        ];
+  protected function AutoCompleteHandler($widget, WidgetBase $handler) {
+    $widget = [$widget];
+    foreach ($widget as $key => &$value) {
+      if (!is_int($key)) {
+        continue;
       }
 
+      $value['target_id']['#selection_handler'] = 'og:default';
+      $value['target_id']['#selection_settings'] = [
+        'other_groups' => TRUE,
+        'field_mode' => 'admin',
+      ];
     }
+
+    $widget = $widget + ['#tree' => TRUE];
 
     return $widget;
   }
