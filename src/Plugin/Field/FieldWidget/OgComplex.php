@@ -150,7 +150,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $widget = $handler->formElement($items, 0, $element, $form, $form_state);
 
     if ($handler instanceof EntityReferenceAutocompleteWidget) {
-      return $this->AutoCompleteHandler($items, $handler);
+      return $this->AutoCompleteHandler($items, $form_state);
     }
 
     return $widget;
@@ -165,9 +165,8 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * @return mixed
    *   Form API element.
    */
-  protected function AutoCompleteHandler(FieldItemListInterface $items, WidgetBase $handler) {
-
-    $field_wrapper = Html::getClass($this->fieldDefinition->getName()) . '-add-another-group';
+  protected function AutoCompleteHandler(FieldItemListInterface $items, FormStateInterface $form_state) {
+    $field_wrapper = Html::getClass($this->fieldDefinition->getName()) . '-other-groups-add-another-group';
 
     if ($this->fieldDefinition->getTargetEntityTypeId() == 'user') {
       $description = $this->t('As groups administrator, associate this user with groups you do <em>not</em> belong to.');
@@ -177,8 +176,6 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     }
 
     $widget = [
-      '#type' => 'container',
-      '#tree' => TRUE,
       '#title' => $this->t('Other groups'),
       '#description' => $description,
       '#prefix' => '<div id="' . $field_wrapper . '">',
@@ -195,12 +192,43 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     // self::massageFormValues() will treat all the other group widget the same.
     $elements = [];
 
-    foreach ($items->referencedEntities() as $key => $item) {
-      $elements[] = $this->otherGroupsSingle($key, $item);
+    $delta = 0;
+    foreach ($items->referencedEntities() as $item) {
+      $elements[$delta] = $this->otherGroupsSingle($delta, $item);
+      $delta++;
     }
 
     // Add another item.
-    $elements[] = $this->otherGroupsSingle($key + 1);
+    $elements[] = $this->otherGroupsSingle($delta + 1);
+
+    if (!$form_state->get('other_group_delta')) {
+      $form_state->set('other_group_delta', $delta);
+    }
+
+    $trigger_element = $form_state->getTriggeringElement();
+
+    if ($trigger_element['#name'] == 'add_another_group') {
+      // Increase the number of other groups.
+      $delta = $form_state->get('other_group_delta') + 1;
+      $form_state->set('other_group_delta', $delta);
+    }
+
+    // Add another auto complete field.
+    for ($i = $delta; $i <= $form_state->get('other_group_delta'); $i++) {
+      // Also add one to the weight delta, just to make sure.
+      $elements[$i] = $this->otherGroupsSingle($i);
+    }
+
+    $widget['add_more'] = [
+      '#type' => 'button',
+      '#value' => $this->t('Add another item'),
+      '#name' => 'add_another_group',
+      '#ajax' => [
+        'callback' => [$this, 'addMoreAjax'],
+        'wrapper' => $field_wrapper,
+        'effect' => 'fade',
+      ],
+    ];
 
     $widget += $elements;
 
@@ -219,6 +247,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    *   A single entity reference input.
    */
   public function otherGroupsSingle($delta, EntityInterface $entity = NULL, $weight_delta = 10) {
+
     return [
       'target_id' => [
         // @todo Allow this to be configurable with a widget setting.
