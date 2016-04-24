@@ -340,6 +340,10 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $gids = [];
     $handler_settings = $this->fieldDefinition->getSetting('handler_settings');
     foreach ($handler_settings['target_bundles'] as $target_bundle) {
+      if (!$referenceable_groups) {
+        continue;
+      }
+
       $gids += array_keys($referenceable_groups[$target_bundle]);
     }
 
