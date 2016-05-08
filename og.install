@@ -5,6 +5,18 @@
  * Install, update, and uninstall functions for the Organic groups module.
  */
 
+use Drupal\og\OgGroupAudienceHelper;
+
+/**
+ * Implements hook_install().
+ */
+function og_install() {
+  OgGroupAudienceHelper::setWidgets('node', 'group_content', 'og_group_ref', [
+    'default' => 'entity_reference_autocomplete',
+    'admin' => 'entity_reference_autocomplete',
+  ]);
+}
+
 /**
  * Implements hook_uninstall().
  */
