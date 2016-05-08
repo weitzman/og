@@ -21,7 +21,7 @@ use Drupal\Core\Session\AccountInterface;
  *   category = @Translation("Reference"),
  *   no_ui = TRUE,
  *   default_widget = "og_complex",
- *   default_formatter = "og_complex",
+ *   default_formatter = "entity_reference_label",
  *   list_class = "\Drupal\og\Plugin\Field\FieldType\OgMembershipReferenceItemList",
  *   constraints = {"ValidOgMembershipReference" = {}}
  * )
