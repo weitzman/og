@@ -175,7 +175,7 @@ class OgGroupAudienceHelper {
   public static function setWidgets($entity_id, $bundle, $field_name, array $modes) {
     $field = FieldConfig::loadByName($entity_id, $bundle, $field_name);
     $handler = $field->getSetting('handler_settings');
-    $handler['handler_settings']['widgets'] = $modes;
+    $handler['widgets'] = $modes;
     $field->setSetting('handler_settings', $handler);
     return $field->save();
   }

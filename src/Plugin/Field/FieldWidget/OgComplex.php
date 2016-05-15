@@ -150,7 +150,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $widget = $handler->formElement($items, 0, $element, $form, $form_state);
 
     if ($handler instanceof EntityReferenceAutocompleteWidget) {
-      return $this->AutoCompleteHandler($items, $form_state);
+      return $this->AutoCompleteHandler($items, $form, $form_state);
     }
 
     return $widget;
@@ -165,7 +165,32 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * @return mixed
    *   Form API element.
    */
-  protected function AutoCompleteHandler(FieldItemListInterface $items, FormStateInterface $form_state) {
+  protected function AutoCompleteHandler(FieldItemListInterface $items, $form, FormStateInterface $form_state) {
+    $field_definition_clone = clone $this->fieldDefinition;
+
+    $handler = OgGroupAudienceHelper::renderWidget($field_definition_clone, 'entity_reference_autocomplete');
+    $element = $handler->formMultipleElements($items, $form, $form_state);
+
+    $field_name = 'other_groups_' . $element['#field_name'];
+    $parents = [];
+
+    $button = $form_state->getTriggeringElement();
+
+    // Increment the items count.
+    $field_state = static::getWidgetState($parents, $field_name, $form_state);
+    if (!isset($field_state['items_count'])) {
+      $field_state['items_count'] = 0;
+      static::setWidgetState($parents, $field_name, $form_state, $field_state);
+    }
+
+    $element['#field_parents'] = [];
+    $element['add_more']['#ajax']['callback'][0] = $this;
+    $element['add_more']['#submit'][0][0] = $this;
+    $element['#field_name'] = $field_name;
+    $element['add_more']['#name'] = $field_name . '_add_more';
+
+    return $element;
+
     $field_wrapper = Html::getClass($this->fieldDefinition->getName()) . '-other-groups-add-another-group';
 
     if ($this->fieldDefinition->getTargetEntityTypeId() == 'user') {
@@ -278,9 +303,9 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       return !empty($item['target_id']);
     });
 
-    foreach ($form_state->getValue($this->fieldDefinition->getName() . '_other_groups') as $other_group) {
-      $values[] = $other_group;
-    }
+//    foreach ($form_state->getValue($this->fieldDefinition->getName() . '_other_groups') as $other_group) {
+//      $values[] = $other_group;
+//    }
 
     return $values;
   }
@@ -318,6 +343,22 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     $element[$delta]['#suffix'] = (isset($element[$delta]['#suffix']) ? $element[$delta]['#suffix'] : '') . '</div>';
 
     return $element;
+  }
+
+  public static function addMoreSubmit(array $form, FormStateInterface $form_state) {
+    $button = $form_state->getTriggeringElement();
+
+    // Go one level up in the form, to the widgets container.
+    $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -1));
+    $field_name = $element['#field_name'];
+    $parents = $element['#field_parents'];
+
+    // Increment the items count.
+    $field_state = static::getWidgetState($parents, $field_name, $form_state);
+    $field_state['items_count']++;
+    static::setWidgetState($parents, $field_name, $form_state, $field_state);
+
+    $form_state->setRebuild();
   }
 
   /**
