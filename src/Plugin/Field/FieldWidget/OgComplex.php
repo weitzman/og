@@ -8,14 +8,13 @@
 namespace Drupal\og\Plugin\Field\FieldWidget;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteTagsWidget;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\EntityReferenceAutocompleteWidget;
-use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\og\Og;
 use Drupal\og\OgAccess;
@@ -58,7 +57,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
 
     // Adding the other groups widget.
     if ($this->isGroupAdmin()) {
-      $parent_form[$this->fieldDefinition->getFieldStorageDefinition()->getName() . '_other_groups'] = $this->otherGroupsWidget($items, $form, $form_state);
+      $parent_form[$this->fieldDefinition->getFieldStorageDefinition()->getName() . '_other_groups'] = $this->otherGroupsWidget($items, $form, $form_state) + ['#tree' => true];
     }
 
     return $parent_form;
@@ -144,13 +143,15 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
 
     $this->fieldDefinition->otherGroup = TRUE;
 
-    $handler = OgGroupAudienceHelper::renderWidget($this->fieldDefinition, $widget_id);
+    $field_definition_clone = clone $this->fieldDefinition;
+
+    $handler = OgGroupAudienceHelper::renderWidget($field_definition_clone, $widget_id);
     $items = $this->getAutoCompleteItems($items, $form, $form_state, TRUE);
 
     $widget = $handler->formElement($items, 0, $element, $form, $form_state);
 
     if ($handler instanceof EntityReferenceAutocompleteWidget) {
-      return $this->AutoCompleteHandler($items, $form, $form_state);
+      return $this->AutoCompleteHandler($field_definition_clone, $items, $form, $form_state);
     }
 
     return $widget;
@@ -165,31 +166,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
    * @return mixed
    *   Form API element.
    */
-  protected function AutoCompleteHandler(FieldItemListInterface $items, $form, FormStateInterface $form_state) {
-    $field_definition_clone = clone $this->fieldDefinition;
-
-    $handler = OgGroupAudienceHelper::renderWidget($field_definition_clone, 'entity_reference_autocomplete');
-    $element = $handler->formMultipleElements($items, $form, $form_state);
-
-    $field_name = 'other_groups_' . $element['#field_name'];
-    $parents = [];
-
-    $button = $form_state->getTriggeringElement();
-
-    // Increment the items count.
-    $field_state = static::getWidgetState($parents, $field_name, $form_state);
-    if (!isset($field_state['items_count'])) {
-      $field_state['items_count'] = 0;
-      static::setWidgetState($parents, $field_name, $form_state, $field_state);
-    }
-
-    $element['#field_parents'] = [];
-    $element['add_more']['#ajax']['callback'][0] = $this;
-    $element['add_more']['#submit'][0][0] = $this;
-    $element['#field_name'] = $field_name;
-    $element['add_more']['#name'] = $field_name . '_add_more';
-
-    return $element;
+  protected function AutoCompleteHandler(FieldDefinitionInterface $field_definition, FieldItemListInterface $items, $form, FormStateInterface $form_state) {
 
     $field_wrapper = Html::getClass($this->fieldDefinition->getName()) . '-other-groups-add-another-group';
 
@@ -303,11 +280,11 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
       return !empty($item['target_id']);
     });
 
-//    foreach ($form_state->getValue($this->fieldDefinition->getName() . '_other_groups') as $other_group) {
-//      $values[] = $other_group;
-//    }
+    $other_group_values = array_filter($form_state->getValue($this->fieldDefinition->getName() . '_other_groups'), function($item) {
+      return is_array($item) && !empty($item['target_id']);
+    });
 
-    return $values;
+    return array_merge($values, $other_group_values);
   }
 
   /**
@@ -318,47 +295,6 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
   protected function isGroupAdmin() {
     // @todo Inject current user service as a dependency.
     return \Drupal::currentUser()->hasPermission(OgAccess::ADMINISTER_GROUP_PERMISSION);
-  }
-
-  /**
-   * Ajax callback for the "Add another item" button.
-   *
-   * This returns the new page content to replace the page content made obsolete
-   * by the form submission.
-   */
-  public static function addMoreAjax(array $form, FormStateInterface $form_state) {
-    $button = $form_state->getTriggeringElement();
-
-    // Go one level up in the form, to the widgets container.
-    $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -1));
-
-    // Ensure the widget allows adding additional items.
-    if ($element['#cardinality'] != FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
-      return;
-    }
-
-    // Add a DIV around the delta receiving the Ajax effect.
-    $delta = $element['#max_delta'];
-    $element[$delta]['#prefix'] = '<div class="ajax-new-content">' . (isset($element[$delta]['#prefix']) ? $element[$delta]['#prefix'] : '');
-    $element[$delta]['#suffix'] = (isset($element[$delta]['#suffix']) ? $element[$delta]['#suffix'] : '') . '</div>';
-
-    return $element;
-  }
-
-  public static function addMoreSubmit(array $form, FormStateInterface $form_state) {
-    $button = $form_state->getTriggeringElement();
-
-    // Go one level up in the form, to the widgets container.
-    $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -1));
-    $field_name = $element['#field_name'];
-    $parents = $element['#field_parents'];
-
-    // Increment the items count.
-    $field_state = static::getWidgetState($parents, $field_name, $form_state);
-    $field_state['items_count']++;
-    static::setWidgetState($parents, $field_name, $form_state, $field_state);
-
-    $form_state->setRebuild();
   }
 
   /**
