@@ -352,7 +352,7 @@ class OgComplex extends EntityReferenceAutocompleteWidget {
     });
 
     $entities = \Drupal::entityTypeManager()
-      ->getStorage($handler_settings['target_type'])
+      ->getStorage($this->fieldDefinition->getFieldStorageDefinition()->getSetting('target_type'))
       ->loadMultiple($entity_ids);
 
     $new_items->setValue($entities);

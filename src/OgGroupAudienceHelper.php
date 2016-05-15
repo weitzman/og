@@ -198,7 +198,7 @@ class OgGroupAudienceHelper {
   public static function getWidgets($entity_id, $bundle, $field_name, $mode = NULL) {
     $field = FieldConfig::loadByName($entity_id, $bundle, $field_name);
     $handler = $field->getSetting('handler_settings');
-    return $mode ? $handler['handler_settings']['widgets'][$mode] : $handler['handler_settings']['widgets'];
+    return $mode ? $handler['widgets'][$mode] : $handler['handler_settings']['widgets'];
   }
 
   /**
