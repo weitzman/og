@@ -67,7 +67,9 @@ class GetMatchingFieldTest extends UnitTestCase {
   protected function setUp() {
     $field_name = 'test_field';
 
-
+    $this->entityTypeId = $this->randomMachineName();
+    $this->bundleId = $this->randomMachineName();
+    $this->provider = $this->randomMachineName();
 
     $field_storage_definition_prophecy = $this->prophesize(FieldStorageDefinitionInterface::class);
     $field_storage_definition_prophecy->getCardinality()
@@ -84,7 +86,7 @@ class GetMatchingFieldTest extends UnitTestCase {
       ->shouldBeCalled();
 
     $field_definition_prophecy->getSetting('target_type')
-      ->willReturn('entity_test')
+      ->willReturn($this->entityTypeId)
       ->shouldBeCalled();
 
 
@@ -102,10 +104,6 @@ class GetMatchingFieldTest extends UnitTestCase {
     // never expected, so just check it's not called.
     $this->groupContent->get($field_name)
       ->shouldNotBeCalled();
-
-    $this->entityTypeId = $this->randomMachineName();
-    $this->bundleId = $this->randomMachineName();
-    $this->provider = $this->randomMachineName();
 
     $this->entityType = $this->getMock('\Drupal\Core\Entity\EntityTypeInterface');
     $this->entityType->expects($this->any())
