@@ -9,9 +9,7 @@ namespace Drupal\Tests\og\Unit;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\og\OgGroupAudienceHelper;
@@ -57,7 +55,7 @@ class GetMatchingFieldTest extends UnitTestCase {
   /**
    * The group content entity.
    *
-   * @var
+   * @var \Drupal\Core\Entity\ContentEntityInterface|\PHPUnit_Framework_MockObject_MockObject
    */
   protected $groupContent;
 
