@@ -9,6 +9,7 @@ namespace Drupal\Tests\og\Unit;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -59,9 +60,16 @@ class GetMatchingFieldTest extends UnitTestCase {
   /**
    * The group content entity.
    *
-   * @var \Drupal\Core\Entity\ContentEntityInterface|\PHPUnit_Framework_MockObject_MockObject
+   * @var \Drupal\Core\Entity\ContentEntityInterface|\Prophecy\Prophecy\ProphecyInterface
    */
   protected $groupContent;
+
+  /**
+   * The entity field manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface|\Prophecy\Prophecy\ProphecyInterface
+   */
+  protected $entityFieldManager;
 
   /**
    * {@inheritdoc}
@@ -117,8 +125,12 @@ class GetMatchingFieldTest extends UnitTestCase {
     $this->entityTypeManager->getDefinition(Argument::type('string'))
       ->willReturn($this->entityType);
 
+    $this->entityFieldManager = $this->prophesize(EntityFieldManagerInterface::class);
+
     $container = new ContainerBuilder();
     $container->set('entity_type.manager', $this->entityTypeManager->reveal());
+    $container->set('entity_field.manager', $this->entityFieldManager->reveal());
+
     \Drupal::setContainer($container);
 
   }
