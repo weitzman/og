@@ -25,10 +25,46 @@ use Drupal\og\OgGroupAudienceHelper;
  */
 class GetMatchingFieldTest extends UnitTestCase {
 
+
   /**
-   * @covers ::getMatchingField
+   * The entity type used for testing.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeInterface|\PHPUnit_Framework_MockObject_MockObject
    */
-  public function testGetMatchingField() {
+  protected $entityType;
+
+  /**
+   * The entity manager used for testing.
+   *
+   * @var \Drupal\Core\Entity\EntityManagerInterface|\PHPUnit_Framework_MockObject_MockObject
+   */
+  protected $entityManager;
+
+  /**
+   * The ID of the type of the entity under test.
+   *
+   * @var string
+   */
+  protected $entityTypeId;
+
+  /**
+   * The ID of the type of the bundle under test.
+   *
+   * @var string
+   */
+  protected $bundleId;
+
+  /**
+   * The group content entity.
+   *
+   * @var
+   */
+  protected $groupContent;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
     $field_name = 'test_field';
 
     $field_storage_definition_prophecy = $this->prophesize(FieldStorageDefinitionInterface::class);
@@ -50,44 +86,46 @@ class GetMatchingFieldTest extends UnitTestCase {
       ->shouldBeCalled();
 
 
-    $entity_prophecy = $this->prophesize(ContentEntityInterface::class);
+    $this->groupContent = $this->prophesize(ContentEntityInterface::class);
 
-    $entity_prophecy->getFieldDefinition($field_name)
+    $this->groupContent->getFieldDefinition($field_name)
       ->willReturn($field_definition_prophecy->reveal());
 
-    $entity_prophecy->bundle()
+    $this->groupContent->bundle()
       ->shouldBeCalled();
-    $entity_prophecy->getEntityTypeId()
+    $this->groupContent->getEntityTypeId()
       ->shouldBeCalled();
 
     // If the cardinality is unlimited getting a count of the field items is
     // never expected, so just check it's not called.
-    $entity_prophecy->get($field_name)
+    $this->groupContent->get($field_name)
       ->shouldNotBeCalled();
 
-    $group_type_id = 'entity_test';
-    $group_bundle = 'test1';
+    $this->entityTypeId = $this->randomMachineName();
+    $this->bundleId = $this->randomMachineName();
 
-    // @todo: This is probably still very wrong.
-    $field_definitions = array(
-      'id' => BaseFieldDefinition::create('integer'),
-      'revision_id' => BaseFieldDefinition::create('integer'),
-    );
+    $this->entityType = $this->getMock('\Drupal\Core\Entity\EntityTypeInterface');
+    $this->entityType->expects($this->any())
+      ->method('getProvider')
+      ->will($this->returnValue('entity_test'));
 
-    $entity_manager = $this->getMock('\Drupal\Core\Entity\EntityManagerInterface');
-    $entity_manager->expects($this->any())
-      ->method('getFieldDefinitions')
-      ->with($group_type_id, $group_bundle)
-      ->will($this->returnValue($field_definitions));
+    $this->entityManager = $this->getMock('\Drupal\Core\Entity\EntityManagerInterface');
+    $this->entityManager->expects($this->any())
+      ->method('getDefinition')
+      ->with($this->entityTypeId)
+      ->will($this->returnValue($this->entityType));
 
     $container = new ContainerBuilder();
-    $container->set('entity.manager', $entity_manager);
+    $container->set('entity.manager', $this->entityManager);
     \Drupal::setContainer($container);
 
-    // @todo: For now, until I get the tests to work we'll do a simple assert.
-    // After that we'll add a proper dataProvider.
+  }
 
-    $this->assertSame(OgGroupAudienceHelper::getMatchingField($entity_prophecy->reveal(), $group_type_id, $group_bundle), $field_name);
+  /**
+   * @covers ::getMatchingField
+   */
+  public function testGetMatchingField() {
+    $this->assertSame(OgGroupAudienceHelper::getMatchingField($this->groupContent->reveal(), $this->entityTypeId, $this->bundleId), 'test_field');
   }
 
 }
