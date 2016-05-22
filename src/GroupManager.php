@@ -8,6 +8,7 @@
 namespace Drupal\og;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\og\Entity\OgRole;
@@ -283,7 +284,7 @@ class GroupManager {
   }
 
   /**
-   * Creates default roles for the given group type.
+   * Creates per bundle or per group OG roles.
    *
    * @param string $entity_type_id
    *   The entity type ID of the group for which to create default roles.
@@ -295,6 +296,9 @@ class GroupManager {
    *   (Optional) The group ID of the group for which to create default roles.
    *   When this property is set it means the roles will be "per group" roles
    *   and apply only to this specific group ID. Defaults to NULL.
+   *
+   * @see \Drupal\og\GroupManager::createPerBundleRoles()
+   * @see \Drupal\og\GroupManager::createPerGroupRoles()
    */
   protected function createRoles($entity_type_id, $bundle_id = NULL, $group_id = NULL) {
     if (!$bundle_id && !$group_id) {
@@ -319,6 +323,31 @@ class GroupManager {
       $role = $this->ogRoleStorage->create($properties + OgRole::getDefaultProperties()[$role_name]);
       $role->save();
     }
+  }
+
+
+  /**
+   * Creates per bundle OG roles.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID of the group for which to create default roles.
+   * @param string $bundle_id
+   *   The bundle ID of the group for which to create default roles.
+   */
+  protected function createPerBundleRoles($entity_type_id, $bundle_id) {
+    $this->createRoles($entity_type_id, $bundle_id);
+  }
+
+
+  /**
+   * Creates per group OG roles.
+   *
+   * @param Drupal\Core\Entity\EntityInterface $group
+   *   The group entity.
+   */
+  protected function createPerGroupRoles(EntityInterface $group) {
+    $entity_type_id = $group->getEntityTypeId();
+    $this->createRoles($entity_type_id, NULL, $group->id());
   }
 
   /**
