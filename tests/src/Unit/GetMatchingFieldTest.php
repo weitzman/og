@@ -122,10 +122,12 @@ class GetMatchingFieldTest extends UnitTestCase {
 
 
     $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
-    $this->entityTypeManager->getDefinition(Argument::type('string'))
+    $this->entityTypeManager->getDefinition($this->entityTypeId)
       ->willReturn($this->entityType);
 
     $this->entityFieldManager = $this->prophesize(EntityFieldManagerInterface::class);
+    // @todo: Return the correct array.
+    $this->entityFieldManager->getFieldDefinitions($this->entityTypeId, $this->bundleId)->willReturn([]);
 
     $container = new ContainerBuilder();
     $container->set('entity_type.manager', $this->entityTypeManager->reveal());
