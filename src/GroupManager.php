@@ -13,6 +13,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\og\Entity\OgRole;
 use Drupal\og\Event\PermissionEvent;
 use Drupal\og\Event\PermissionEventInterface;
+use Drupal\og\Exception\OgRoleException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -286,13 +287,24 @@ class GroupManager {
    *
    * @param string $entity_type_id
    *   The entity type ID of the group for which to create default roles.
-   * @param string $bundle_id
-   *   The bundle ID of the group for which to create default roles.
+   * @param string|null $bundle_id
+   *   (Optional) The bundle ID of the group for which to create default roles.
+   *   When this property is set it means the roles will be "global" roles
+   *   that apply to any group of the bundle ID. Defaults to NULL.
+   * @param string|null $group_id
+   *   (Optional) The group ID of the group for which to create default roles.
+   *   When this property is set it means the roles will be "per group" roles
+   *   and apply only to this specific group ID. Defaults to NULL.
    */
-  protected function createRoles($entity_type_id, $bundle_id) {
+  protected function createRoles($entity_type_id, $bundle_id = NULL, $group_id = NULL) {
+    if (!$bundle_id && !$group_id) {
+      throw new OgRoleException('Cannot create OG roles without either bundle ID or the group ID being set.');
+    }
+
     $properties = [
       'group_type' => $entity_type_id,
       'group_bundle' => $bundle_id,
+      'group_id' => $group_id,
     ];
     foreach ([OgRoleInterface::ANONYMOUS, OgRoleInterface::AUTHENTICATED, OgRoleInterface::ADMINISTRATOR] as $role_name) {
       $properties['id'] = $role_name;
