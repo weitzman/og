@@ -93,6 +93,8 @@ class GetMatchingFieldTest extends UnitTestCase {
 
 
     $this->groupContent = $this->prophesize(ContentEntityInterface::class);
+    $this->groupContent->getEntityTypeId()->willReturn($this->entityTypeId);
+//    $this->groupContent->bundle()->willReturn($this->bundleId);
 
     $this->groupContent->getFieldDefinition($field_name)
       ->willReturn($field_definition_prophecy->reveal());
