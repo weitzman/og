@@ -9,11 +9,14 @@ namespace Drupal\Tests\og\Unit;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\og\OgGroupAudienceHelper;
+use Prophecy\Argument;
 
 /**
  * Tests the OgGroupAudienceHelper::getMatchingField method.
@@ -105,10 +108,11 @@ class GetMatchingFieldTest extends UnitTestCase {
       ->shouldNotBeCalled();
 
     $this->entityType = $this->prophesize(EntityTypeInterface::class);
+    $this->entityType->isSubclassOf(FieldableEntityInterface::class)->willReturn(TRUE);
 
 
     $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
-    $this->entityTypeManager->getDefinition($this->entityTypeId)
+    $this->entityTypeManager->getDefinition(Argument::type('string'))
       ->willReturn($this->entityType);
 
     $container = new ContainerBuilder();
