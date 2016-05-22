@@ -9,6 +9,7 @@ namespace Drupal\Tests\og\Unit;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Tests\UnitTestCase;
@@ -36,7 +37,7 @@ class GetMatchingFieldTest extends UnitTestCase {
    *
    * @var \Drupal\Core\Entity\EntityManagerInterface|\PHPUnit_Framework_MockObject_MockObject
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * The ID of the type of the entity under test.
@@ -103,19 +104,15 @@ class GetMatchingFieldTest extends UnitTestCase {
     $this->groupContent->get($field_name)
       ->shouldNotBeCalled();
 
-    $this->entityType = $this->getMock('\Drupal\Core\Entity\EntityTypeInterface');
-    $this->entityType->expects($this->any())
-      ->method('getProvider')
-      ->will($this->returnValue($this->provider));
+    $this->entityType = $this->prophesize(EntityTypeInterface::class);
 
-    $this->entityManager = $this->getMock('\Drupal\Core\Entity\EntityTypeManagerInterface');
-    $this->entityManager->expects($this->any())
-      ->method('getDefinition')
-      ->with($this->entityTypeId)
-      ->will($this->returnValue($this->entityType));
+
+    $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
+    $this->entityTypeManager->getDefinition($this->entityTypeId)
+      ->willReturn($this->entityType);
 
     $container = new ContainerBuilder();
-    $container->set('entity_type.manager', $this->entityManager);
+    $container->set('entity_type.manager', $this->entityTypeManager->reveal());
     \Drupal::setContainer($container);
 
   }
