@@ -67,6 +67,8 @@ class GetMatchingFieldTest extends UnitTestCase {
   protected function setUp() {
     $field_name = 'test_field';
 
+
+
     $field_storage_definition_prophecy = $this->prophesize(FieldStorageDefinitionInterface::class);
     $field_storage_definition_prophecy->getCardinality()
       ->willReturn(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
@@ -103,20 +105,21 @@ class GetMatchingFieldTest extends UnitTestCase {
 
     $this->entityTypeId = $this->randomMachineName();
     $this->bundleId = $this->randomMachineName();
+    $this->provider = $this->randomMachineName();
 
     $this->entityType = $this->getMock('\Drupal\Core\Entity\EntityTypeInterface');
     $this->entityType->expects($this->any())
       ->method('getProvider')
-      ->will($this->returnValue('entity_test'));
+      ->will($this->returnValue($this->provider));
 
-    $this->entityManager = $this->getMock('\Drupal\Core\Entity\EntityManagerInterface');
+    $this->entityManager = $this->getMock('\Drupal\Core\Entity\EntityTypeManagerInterface');
     $this->entityManager->expects($this->any())
       ->method('getDefinition')
       ->with($this->entityTypeId)
       ->will($this->returnValue($this->entityType));
 
     $container = new ContainerBuilder();
-    $container->set('entity.manager', $this->entityManager);
+    $container->set('entity_type.manager', $this->entityManager);
     \Drupal::setContainer($container);
 
   }
