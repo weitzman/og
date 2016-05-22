@@ -12,7 +12,6 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldException;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * OG audience field helper methods.
@@ -92,7 +91,7 @@ class OgGroupAudienceHelper {
    *   found.
    */
   public static function getMatchingField(ContentEntityInterface $entity, $group_type_id, $group_bundle, $check_access = TRUE) {
-    $fields = Og::getAllGroupAudienceFields($entity->getEntityTypeId(), $entity->bundle());
+    $fields = OgGroupAudienceHelper::getAllGroupAudienceFields($entity->getEntityTypeId(), $entity->bundle());
 
     // Bail out if there are no group audience fields.
     if (!$fields) {
