@@ -20,6 +20,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\og\Og;
 use Drupal\og\OgAccess;
+use Drupal\og\OgFieldsInterface;
 use Drupal\user\Entity\User;
 
 /**
@@ -42,32 +43,39 @@ class OgComplex extends WidgetBase {
    */
   public function form(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
     $config = FieldConfig::load($this->fieldDefinition->getTargetEntityTypeId() . '.' . $this->fieldDefinition->getTargetBundle() . '.' . $this->fieldDefinition->getName());
+    $default_configuration = $this->getFieldConfigSetting($config);
 
     /** @var WidgetPluginManager $widget */
     $widget = \Drupal::service('plugin.manager.field.widget');
-
-    $default_configuration = [
-      'type' => 'og_complex',
-      'settings' => [],
-      'third_party_settings' => [],
-      'field_definition' => $config,
-    ];
 
     /** @var WidgetInterface $foo */
     $foo = $widget->createInstance('entity_reference_autocomplete', $default_configuration);
     $bar = $widget->createInstance('entity_reference_autocomplete', $default_configuration);
 
-    $form_state_new = clone $form_state;
-    $form_new = $form;
+    // The problem comes from WidgetBase::form() where we have the function
+    // static::getWidgetState(). Since the field name is the same the storage
+    // of the fields are keep the same the add another button act weird.
+    // We need to pass that logic and apply it to a state when we call to the
+    // same field twice.
+    $items_new = clone $items;
 
     $one = $foo->form($items, $form, $form_state);
-    $two = $bar->form($items, $form_new, $form_state_new);
+    $two = $bar->form($items_new, $form, $form_state);
 
     return [
       'one' => $one,
       'two' => $two,
     ];
 
+  }
+
+  protected function getFieldConfigSetting($field_definition) {
+    return [
+      'type' => 'og_complex',
+      'settings' => [],
+      'third_party_settings' => [],
+      'field_definition' => $field_definition,
+    ];
   }
 
   /**
