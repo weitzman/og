@@ -9,6 +9,7 @@ use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\og\Og;
 use Drupal\og\OgGroupAudienceHelper;
+use Drupal\user\Entity\User;
 
 /**
  * Tests getting the group content of a group.
@@ -38,6 +39,13 @@ class GetGroupContentTest extends KernelTestBase {
   protected $entityTypeManager;
 
   /**
+   * The group admin user.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected $groupAdmin;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -50,8 +58,13 @@ class GetGroupContentTest extends KernelTestBase {
     $this->installEntitySchema('user');
     $this->installSchema('system', 'sequences');
 
-    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface entityTypeManager */
-    $this->entityTypeManager = $this->container->get('entity_type.manager');
+    /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
+    $entity_type_manager = $this->container->get('entity_type.manager');
+    $this->entityTypeManager = $entity_type_manager;
+
+    // Create group admin user.
+    $this->groupAdmin = User::create(['name' => $this->randomString()]);
+    $this->groupAdmin->save();
   }
 
   /**
@@ -71,6 +84,7 @@ class GetGroupContentTest extends KernelTestBase {
     $groups['node'] = Node::create([
       'title' => $this->randomString(),
       'type' => $bundle,
+      'uid' => $this->groupAdmin->id(),
     ]);
     $groups['node']->save();
 
@@ -82,6 +96,7 @@ class GetGroupContentTest extends KernelTestBase {
     $groups['entity_test'] = EntityTest::create([
       'type' => $bundle,
       'name' => $this->randomString(),
+      'uid' => $this->groupAdmin->id(),
     ]);
     $groups['entity_test']->save();
 
@@ -112,7 +127,7 @@ class GetGroupContentTest extends KernelTestBase {
           'field_config' => [
             'settings' => [
               'handler_settings' => [
-                'target_bundles' => [$groups[$target_group_type]->bundle()  => $groups[$target_group_type]->bundle()],
+                'target_bundles' => [$groups[$target_group_type]->bundle() => $groups[$target_group_type]->bundle()],
               ],
             ],
           ],
@@ -167,6 +182,7 @@ class GetGroupContentTest extends KernelTestBase {
       $groups[$i] = Node::create([
         'title' => $this->randomString(),
         'type' => $bundle,
+        'uid' => $this->groupAdmin->id(),
       ]);
       $groups[$i]->save();
     }
@@ -220,6 +236,7 @@ class GetGroupContentTest extends KernelTestBase {
     $groups['node'] = Node::create([
       'title' => $this->randomString(),
       'type' => $bundle,
+      'uid' => $this->groupAdmin->id(),
     ]);
     $groups['node']->save();
 
@@ -231,6 +248,7 @@ class GetGroupContentTest extends KernelTestBase {
     $groups['entity_test'] = EntityTest::create([
       'type' => $bundle,
       'name' => $this->randomString(),
+      'uid' => $this->groupAdmin->id(),
     ]);
     $groups['entity_test']->save();
 

@@ -16,7 +16,7 @@ use Drupal\user\Entity\User;
  * @group og
  * @coversDefaultClass \Drupal\og\Og
  */
-class GetUserMembershipsTest extends KernelTestBase {
+class GetMembershipsTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
@@ -56,6 +56,10 @@ class GetUserMembershipsTest extends KernelTestBase {
     $this->installEntitySchema('user');
     $this->installSchema('system', 'sequences');
 
+    // Create group admin user.
+    $group_admin = User::create(['name' => $this->randomString()]);
+    $group_admin->save();
+
     // Create two groups.
     for ($i = 0; $i < 2; $i++) {
       $bundle = "node_$i";
@@ -68,6 +72,7 @@ class GetUserMembershipsTest extends KernelTestBase {
       $group = Node::create([
         'title' => $this->randomString(),
         'type' => $bundle,
+        'uid' => $group_admin->id(),
       ]);
       $group->save();
       $this->groups[] = $group;
@@ -101,9 +106,8 @@ class GetUserMembershipsTest extends KernelTestBase {
         if ($status) {
           $membership = OgMembership::create(['type' => OgMembershipInterface::TYPE_DEFAULT]);
           $membership
-            ->setUser($user->id())
-            ->setEntityId($group->id())
-            ->setGroupEntityType($group->getEntityTypeId())
+            ->setUser($user)
+            ->setGroup($group)
             ->setState($status)
             ->save();
         }
@@ -123,11 +127,11 @@ class GetUserMembershipsTest extends KernelTestBase {
    * @param array $expected
    *   An array containing the expected results to be returned.
    *
-   * @covers ::getUserMemberships
+   * @covers ::getMemberships
    * @dataProvider membershipDataProvider
    */
-  public function testGetUserMemberships($index, array $states, $field_name, array $expected) {
-    $result = Og::getUserMemberships($this->users[$index], $states, $field_name);
+  public function testGetMemberships($index, array $states, $field_name, array $expected) {
+    $result = Og::getMemberships($this->users[$index], $states, $field_name);
 
     // Check that the correct number of results is returned.
     $this->assertEquals(count($expected), count($result));
@@ -144,7 +148,7 @@ class GetUserMembershipsTest extends KernelTestBase {
     foreach ($expected as $expected_group) {
       $expected_id = $this->groups[$expected_group]->id();
       foreach ($result as $membership) {
-        if ($membership->getEntityId() === $expected_id) {
+        if ($membership->getGroupId() === $expected_id) {
           // Test successful: the expected result was found.
           continue 2;
         }
@@ -173,10 +177,18 @@ class GetUserMembershipsTest extends KernelTestBase {
       // Filter by active state.
       [0, [OgMembershipInterface::STATE_ACTIVE], NULL, [0]],
       // Filter by active + pending state.
-      [0, [OgMembershipInterface::STATE_ACTIVE, OgMembershipInterface::STATE_PENDING], NULL, [0]],
+      [0, [
+        OgMembershipInterface::STATE_ACTIVE,
+        OgMembershipInterface::STATE_PENDING,
+      ], NULL, [0],
+      ],
       // Filter by blocked + pending state. Since the user is active this should
       // not return any matches.
-      [0, [OgMembershipInterface::STATE_BLOCKED, OgMembershipInterface::STATE_PENDING], NULL, []],
+      [0, [
+        OgMembershipInterface::STATE_BLOCKED,
+        OgMembershipInterface::STATE_PENDING,
+      ], NULL, [],
+      ],
       // Filter by a non-existing field name. This should not return any
       // matches.
       [0, [], 'non_existing_field_name', []],
@@ -209,17 +221,39 @@ class GetUserMembershipsTest extends KernelTestBase {
       // Filter by blocked state.
       [3, [OgMembershipInterface::STATE_BLOCKED], NULL, [1]],
       // Filter by combinations of states.
-      [3, [OgMembershipInterface::STATE_ACTIVE, OgMembershipInterface::STATE_PENDING], NULL, [0]],
-      [3, [OgMembershipInterface::STATE_ACTIVE, OgMembershipInterface::STATE_PENDING, OgMembershipInterface::STATE_BLOCKED], NULL, [0, 1]],
-      [3, [OgMembershipInterface::STATE_ACTIVE, OgMembershipInterface::STATE_BLOCKED], NULL, [1]],
-      [3, [OgMembershipInterface::STATE_PENDING, OgMembershipInterface::STATE_BLOCKED], NULL, [0, 1]],
+      [3, [
+        OgMembershipInterface::STATE_ACTIVE,
+        OgMembershipInterface::STATE_PENDING,
+      ], NULL, [0],
+      ],
+      [3, [
+        OgMembershipInterface::STATE_ACTIVE,
+        OgMembershipInterface::STATE_PENDING,
+        OgMembershipInterface::STATE_BLOCKED,
+      ], NULL, [0, 1],
+      ],
+      [3, [
+        OgMembershipInterface::STATE_ACTIVE,
+        OgMembershipInterface::STATE_BLOCKED,
+      ], NULL, [1],
+      ],
+      [3, [
+        OgMembershipInterface::STATE_PENDING,
+        OgMembershipInterface::STATE_BLOCKED,
+      ], NULL, [0, 1],
+      ],
 
       // A user which is not subscribed to either of the two groups.
       [4, [], NULL, []],
       [4, [OgMembershipInterface::STATE_ACTIVE], NULL, []],
       [4, [OgMembershipInterface::STATE_BLOCKED], NULL, []],
       [4, [OgMembershipInterface::STATE_PENDING], NULL, []],
-      [4, [OgMembershipInterface::STATE_ACTIVE, OgMembershipInterface::STATE_PENDING, OgMembershipInterface::STATE_BLOCKED], NULL, []],
+      [4, [
+        OgMembershipInterface::STATE_ACTIVE,
+        OgMembershipInterface::STATE_PENDING,
+        OgMembershipInterface::STATE_BLOCKED,
+      ], NULL, [],
+      ],
     ];
   }
 

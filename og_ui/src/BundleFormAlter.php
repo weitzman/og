@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\og_ui\BundleFormAlter.
- */
-
 namespace Drupal\og_ui;
 
 use Drupal\Component\Utility\Unicode;
@@ -20,21 +15,29 @@ use Drupal\og\OgGroupAudienceHelper;
 class BundleFormAlter {
 
   /**
+   * Entity type definition.
+   *
    * @var \Drupal\Core\Entity\ContentEntityTypeInterface
    */
   protected $definition;
 
   /**
+   * The entity bundle.
+   *
    * @var string
    */
   protected $bundle;
 
   /**
+   * The bundle label.
+   *
    * @var string
    */
   protected $bundleLabel;
 
   /**
+   * The entity type ID.
+   *
    * @var string
    */
   protected $entityTypeId;
@@ -43,6 +46,7 @@ class BundleFormAlter {
    * Construct a BundleFormAlter object.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity object.
    */
   public function __construct(EntityInterface $entity) {
     $this->entity = $entity;
@@ -52,7 +56,9 @@ class BundleFormAlter {
    * This is a helper for og_ui_form_alter().
    *
    * @param array $form
+   *   The form variable.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
    */
   public function formAlter(array &$form, FormStateInterface $form_state) {
     $this->prepare($form, $form_state);
@@ -71,7 +77,9 @@ class BundleFormAlter {
    * Prepares object properties and adds the og details element.
    *
    * @param array $form
-   * @param $form_state
+   *   The form variable.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
    */
   protected function prepare(array &$form, FormStateInterface $form_state) {
     // Example: article.
@@ -141,7 +149,7 @@ class BundleFormAlter {
       // If a group audience field already exists, use its value. Otherwise fall
       // back to the first entity type that was returned.
       reset($target_types);
-      $target_type_default = isset($handler_settings['target_type']) ? $handler_settings['target_type'] : key($target_types);
+      $target_type_default = $field && !empty($field->getSetting('target_type')) ? $field->getSetting('target_type') : key($target_types);
 
       // If the target type was set using AJAX, use that instead of the default.
       $ajax_value = $form_state->getValue('og_target_type');
@@ -201,6 +209,5 @@ class BundleFormAlter {
       $form_state->setValue('og_target_bundles', NULL);
     }
   }
-
 
 }
