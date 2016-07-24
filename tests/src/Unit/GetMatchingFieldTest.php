@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Tests\og\Unit\GetMatchingFieldTest.
- */
-
 namespace Drupal\Tests\og\Unit;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -17,7 +12,6 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\og\OgGroupAudienceHelper;
-use Prophecy\Argument;
 
 /**
  * Tests the OgGroupAudienceHelper::getMatchingField method.
@@ -99,7 +93,6 @@ class GetMatchingFieldTest extends UnitTestCase {
       ->willReturn($this->entityTypeId)
       ->shouldBeCalled();
 
-
     $this->groupContent = $this->prophesize(ContentEntityInterface::class);
     $this->groupContent->getEntityTypeId()->willReturn($this->entityTypeId);
     $this->groupContent->bundle()->willReturn($this->bundleId);
@@ -119,7 +112,6 @@ class GetMatchingFieldTest extends UnitTestCase {
 
     $this->entityType = $this->prophesize(EntityTypeInterface::class);
     $this->entityType->isSubclassOf(FieldableEntityInterface::class)->willReturn(TRUE);
-
 
     $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
     $this->entityTypeManager->getDefinition($this->entityTypeId)
