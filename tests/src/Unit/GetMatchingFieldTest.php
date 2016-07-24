@@ -24,28 +24,28 @@ class GetMatchingFieldTest extends UnitTestCase {
 
 
   /**
-   * The entity type used for testing.
+   * The entity type.
    *
    * @var \Drupal\Core\Entity\EntityTypeInterface|\Prophecy\Prophecy\ProphecyInterface
    */
   protected $entityType;
 
   /**
-   * The entity manager used for testing.
+   * The entity manager.
    *
    * @var \Drupal\Core\Entity\EntityManagerInterface|\Prophecy\Prophecy\ProphecyInterface
    */
   protected $entityTypeManager;
 
   /**
-   * The ID of the type of the entity under test.
+   * The entity type ID.
    *
    * @var string
    */
   protected $entityTypeId;
 
   /**
-   * The ID of the type of the bundle under test.
+   * The bundle ID.
    *
    * @var string
    */
@@ -56,7 +56,7 @@ class GetMatchingFieldTest extends UnitTestCase {
    *
    * @var \Drupal\Core\Entity\ContentEntityInterface|\Prophecy\Prophecy\ProphecyInterface
    */
-  protected $groupContent;
+  protected $entity;
 
   /**
    * The entity field manager.
@@ -73,53 +73,82 @@ class GetMatchingFieldTest extends UnitTestCase {
 
     $this->entityTypeId = $this->randomMachineName();
     $this->bundleId = $this->randomMachineName();
-    $this->provider = $this->randomMachineName();
-
-    $field_storage_definition_prophecy = $this->prophesize(FieldStorageDefinitionInterface::class);
-    $field_storage_definition_prophecy->getCardinality()
-      ->willReturn(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-      ->shouldBeCalled();
-
-    $field_definition_prophecy = $this->prophesize(FieldDefinitionInterface::class);
-    $field_definition_prophecy->getFieldStorageDefinition()
-      ->willReturn($field_storage_definition_prophecy->reveal())
-      ->shouldBeCalled();
-
-    $field_definition_prophecy->getType()
-      ->willReturn('og_membership_reference')
-      ->shouldBeCalled();
-
-    $field_definition_prophecy->getSetting('target_type')
-      ->willReturn($this->entityTypeId)
-      ->shouldBeCalled();
-
-    $this->groupContent = $this->prophesize(ContentEntityInterface::class);
-    $this->groupContent->getEntityTypeId()->willReturn($this->entityTypeId);
-    $this->groupContent->bundle()->willReturn($this->bundleId);
-
-    $this->groupContent->getFieldDefinition($field_name)
-      ->willReturn($field_definition_prophecy->reveal());
-
-    $this->groupContent->bundle()
-      ->shouldBeCalled();
-    $this->groupContent->getEntityTypeId()
-      ->shouldBeCalled();
-
-    // If the cardinality is unlimited getting a count of the field items is
-    // never expected, so just check it's not called.
-    $this->groupContent->get($field_name)
-      ->shouldNotBeCalled();
 
     $this->entityType = $this->prophesize(EntityTypeInterface::class);
-    $this->entityType->isSubclassOf(FieldableEntityInterface::class)->willReturn(TRUE);
+    $this
+      ->entityType
+      ->isSubclassOf(FieldableEntityInterface::class)
+      ->willReturn(TRUE);
 
     $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
-    $this->entityTypeManager->getDefinition($this->entityTypeId)
+    $this
+      ->entityTypeManager
+      ->getDefinition($this->entityTypeId)
       ->willReturn($this->entityType);
 
     $this->entityFieldManager = $this->prophesize(EntityFieldManagerInterface::class);
-    // @todo: Return the correct array.
-    $this->entityFieldManager->getFieldDefinitions($this->entityTypeId, $this->bundleId)->willReturn([]);
+    $this
+      ->entityFieldManager
+      ->getFieldDefinitions($this->entityTypeId, $this->bundleId)
+      // @todo: Return the field definitions.
+      ->willReturn([]);
+
+    $this->entity = $this->prophesize(ContentEntityInterface::class);
+    $this
+      ->entity
+      ->getEntityTypeId()
+      ->willReturn($this->entityTypeId);
+
+    $this
+      ->entity
+      ->bundle()
+      ->willReturn($this->bundleId);
+
+
+//    $field_storage_definition_prophecy = $this->prophesize(FieldStorageDefinitionInterface::class);
+//    $field_storage_definition_prophecy
+//      ->getCardinality()
+//      ->willReturn(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+//      ->shouldBeCalled();
+//
+//    $field_definition_prophecy = $this->prophesize(FieldDefinitionInterface::class);
+//    $field_definition_prophecy
+//      ->getFieldStorageDefinition()
+//      ->willReturn($field_storage_definition_prophecy->reveal())
+//      ->shouldBeCalled();
+//
+//    $field_definition_prophecy
+//      ->getType()
+//      ->willReturn('og_membership_reference')
+//      ->shouldBeCalled();
+//
+//    $field_definition_prophecy
+//      ->getSetting('target_type')
+//      ->willReturn($this->entityTypeId)
+//      ->shouldBeCalled();
+//
+//    $this
+//      ->entity
+//      ->getFieldDefinition($field_name)
+//      ->willReturn($field_definition_prophecy->reveal());
+//
+//    $this
+//      ->entity
+//      ->bundle()
+//      ->shouldBeCalled();
+//
+//    $this
+//      ->entity
+//      ->getEntityTypeId()
+//      ->shouldBeCalled();
+//
+//    // If the cardinality is unlimited getting a count of the field items is
+//    // never expected, so just check it's not called.
+//    $this
+//      ->entity
+//      ->get($field_name)
+//      ->shouldNotBeCalled();
+
 
     $container = new ContainerBuilder();
     $container->set('entity_type.manager', $this->entityTypeManager->reveal());
@@ -133,7 +162,8 @@ class GetMatchingFieldTest extends UnitTestCase {
    * @covers ::getMatchingField
    */
   public function testGetMatchingField() {
-    $this->assertSame(OgGroupAudienceHelper::getMatchingField($this->groupContent->reveal(), $this->entityTypeId, $this->bundleId), 'test_field');
+    $this->assertNull(OgGroupAudienceHelper::getMatchingField($this->entity->reveal(), $this->entityTypeId, $this->bundleId));
+//    $this->assertSame(OgGroupAudienceHelper::getMatchingField($this->entity->reveal(), $this->entityTypeId, $this->bundleId), 'test_field');
   }
 
 }
