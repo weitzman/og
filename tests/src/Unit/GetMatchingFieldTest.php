@@ -8,8 +8,6 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\og\OgGroupAudienceHelper;
 
@@ -87,11 +85,6 @@ class GetMatchingFieldTest extends UnitTestCase {
       ->willReturn($this->entityType);
 
     $this->entityFieldManager = $this->prophesize(EntityFieldManagerInterface::class);
-    $this
-      ->entityFieldManager
-      ->getFieldDefinitions($this->entityTypeId, $this->bundleId)
-      // @todo: Return the field definitions.
-      ->willReturn([]);
 
     $this->entity = $this->prophesize(ContentEntityInterface::class);
     $this
@@ -104,52 +97,49 @@ class GetMatchingFieldTest extends UnitTestCase {
       ->bundle()
       ->willReturn($this->bundleId);
 
-
-//    $field_storage_definition_prophecy = $this->prophesize(FieldStorageDefinitionInterface::class);
-//    $field_storage_definition_prophecy
-//      ->getCardinality()
-//      ->willReturn(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-//      ->shouldBeCalled();
-//
-//    $field_definition_prophecy = $this->prophesize(FieldDefinitionInterface::class);
-//    $field_definition_prophecy
-//      ->getFieldStorageDefinition()
-//      ->willReturn($field_storage_definition_prophecy->reveal())
-//      ->shouldBeCalled();
-//
-//    $field_definition_prophecy
-//      ->getType()
-//      ->willReturn('og_membership_reference')
-//      ->shouldBeCalled();
-//
-//    $field_definition_prophecy
-//      ->getSetting('target_type')
-//      ->willReturn($this->entityTypeId)
-//      ->shouldBeCalled();
-//
-//    $this
-//      ->entity
-//      ->getFieldDefinition($field_name)
-//      ->willReturn($field_definition_prophecy->reveal());
-//
-//    $this
-//      ->entity
-//      ->bundle()
-//      ->shouldBeCalled();
-//
-//    $this
-//      ->entity
-//      ->getEntityTypeId()
-//      ->shouldBeCalled();
-//
-//    // If the cardinality is unlimited getting a count of the field items is
-//    // never expected, so just check it's not called.
-//    $this
-//      ->entity
-//      ->get($field_name)
-//      ->shouldNotBeCalled();
-
-
+    // $field_storage_definition_prophecy = $this->prophesize(FieldStorageDefinitionInterface::class);
+    //    $field_storage_definition_prophecy
+    //      ->getCardinality()
+    //      ->willReturn(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
+    //      ->shouldBeCalled();
+    //
+    //    $field_definition_prophecy = $this->prophesize(FieldDefinitionInterface::class);
+    //    $field_definition_prophecy
+    //      ->getFieldStorageDefinition()
+    //      ->willReturn($field_storage_definition_prophecy->reveal())
+    //      ->shouldBeCalled();
+    //
+    //    $field_definition_prophecy
+    //      ->getType()
+    //      ->willReturn('og_membership_reference')
+    //      ->shouldBeCalled();
+    //
+    //    $field_definition_prophecy
+    //      ->getSetting('target_type')
+    //      ->willReturn($this->entityTypeId)
+    //      ->shouldBeCalled();
+    //
+    //    $this
+    //      ->entity
+    //      ->getFieldDefinition($field_name)
+    //      ->willReturn($field_definition_prophecy->reveal());
+    //
+    //    $this
+    //      ->entity
+    //      ->bundle()
+    //      ->shouldBeCalled();
+    //
+    //    $this
+    //      ->entity
+    //      ->getEntityTypeId()
+    //      ->shouldBeCalled();
+    //
+    //    // If the cardinality is unlimited getting a count of the field items is
+    //    // never expected, so just check it's not called.
+    //    $this
+    //      ->entity
+    //      ->get($field_name)
+    //      ->shouldNotBeCalled();
     $container = new ContainerBuilder();
     $container->set('entity_type.manager', $this->entityTypeManager->reveal());
     $container->set('entity_field.manager', $this->entityFieldManager->reveal());
@@ -159,11 +149,18 @@ class GetMatchingFieldTest extends UnitTestCase {
   }
 
   /**
+   * Tests no existing audience fields.
+   *
    * @covers ::getMatchingField
    */
-  public function testGetMatchingField() {
+  public function testNoFields() {
+    $this
+      ->entityFieldManager
+      ->getFieldDefinitions($this->entityTypeId, $this->bundleId)
+      // Return empty field definitions.
+      ->willReturn([]);
+
     $this->assertNull(OgGroupAudienceHelper::getMatchingField($this->entity->reveal(), $this->entityTypeId, $this->bundleId));
-//    $this->assertSame(OgGroupAudienceHelper::getMatchingField($this->entity->reveal(), $this->entityTypeId, $this->bundleId), 'test_field');
   }
 
 }
