@@ -21,18 +21,18 @@ use Drupal\Tests\UnitTestCase;
 class CreateMembershipTest extends UnitTestCase {
 
   /**
-   * The entity type manager prophecy used in the test.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface|\Prophecy\Prophecy\ObjectProphecy
-   */
-  protected $entityTypeManager;
-
-  /**
    * The entity manager used for testing.
    *
    * @var \Drupal\Core\Entity\EntityManagerInterface|\Prophecy\Prophecy\ObjectProphecy
    */
   protected $entityManager;
+
+  /**
+   * The entity storage prophecy used in the test.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface|\Prophecy\Prophecy\ObjectProphecy
+   */
+  protected $entityStorage;
 
   /**
    * The mocked group manager.
@@ -81,8 +81,18 @@ class CreateMembershipTest extends UnitTestCase {
     $this->groupManager = $this->prophesize(GroupManager::class);
     $this->groupManager->isGroup($this->entityTypeId, $this->bundle)->willReturn(TRUE);
 
-    $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
+    $this->entityStorage = $this->prophesize(EntityStorageInterface::class);
+
     $this->entityManager= $this->prophesize(EntityManagerInterface::class);
+    $this->entityManager->getStorage($this->entityTypeId)
+      ->willReturn($this->entityStorage->reveal());
+
+    $this->entityManager->getEntityTypeFromClass('Drupal\og\Entity\OgMembership')
+      ->willReturn($this->entityTypeId);
+
+    $entity = $this->prophesize(EntityInterface::class);
+    $this->entityStorage->create()
+      ->willReturn($entity->reveal());
 
     // Create a mocked test group.
     $group_entity = $this->prophesize(EntityInterface::class);
@@ -91,6 +101,8 @@ class CreateMembershipTest extends UnitTestCase {
     $group_entity->id()->willReturn($this->randomMachineName());
 
     $this->group = $group_entity->reveal();
+
+    $group_entity->create()->willReturn($this->group);
 
     // Create a mocked test user.
     $this->user = $this->prophesize(AccountInterface::class);
