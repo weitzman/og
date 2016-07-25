@@ -305,7 +305,7 @@ class OgMembership extends ContentEntityBase implements OgMembershipInterface {
 
     if (!$this->get('entity_id')) {
       // Group was not set.
-      throw new OgException(sprintf('Membership cannot be set for an empty or an unsaved group.');
+      throw new \LogicException('Membership cannot be set for an empty or an unsaved group.');
     }
 
     $group = $this->getGroup();
@@ -313,7 +313,7 @@ class OgMembership extends ContentEntityBase implements OgMembershipInterface {
     $bundle = $group->bundle();
     if (!Og::isGroup($entity_type_id, $bundle)) {
       // Group is not valid.
-      throw new OgException(sprintf('Entity type %s with ID %s is not an OG group.', $entity_type_id, $group->id()));
+      throw new \LogicException(sprintf('Entity type %s with ID %s is not an OG group.', $entity_type_id, $group->id()));
     }
 
     parent::preSave($storage);
