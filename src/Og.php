@@ -283,20 +283,20 @@ class Og {
     $bundle = $entity->bundle();
 
     if ($group->isNew()) {
-      throw new OgException(sprintf('Group of entity type %s is new, and cannot be used for creating membership.', $group_entity_type_id);
+      throw new OgException(sprintf('Group of entity type %s is new, and cannot be used for creating membership.', $group_entity_type_id));
     }
 
     if ($group->isNew()) {
-      throw new OgException(sprintf('Group content of entity type %s is new, and cannot be used for creating membership.', $entity_type_id);
+      throw new OgException(sprintf('Group content of entity type %s is new, and cannot be used for creating membership.', $entity_type_id));
     }
 
     // Validate entities are "group" and "group content"
     if (!self::isGroup($group_entity_type_id, $group_bundle)) {
-      throw new OgException(sprintf('Entity type %s with ID %s is not an OG group.', $group_entity_type_id, $group->id());
+      throw new OgException(sprintf('Entity type %s with ID %s is not an OG group.', $group_entity_type_id, $group->id()));
     }
 
     if (!self::isGroupContent($entity_type_id, $bundle)) {
-      throw new OgException(sprintf('Entity type %s with ID %s is not a OG group content.', $group_entity_type_id, $group->id());
+      throw new OgException(sprintf('Entity type %s with ID %s is not a OG group content.', $group_entity_type_id, $group->id()));
     }
 
     /** @var OgMembershipInterface $membership */
