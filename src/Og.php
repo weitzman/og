@@ -261,7 +261,7 @@ class Og {
   }
 
   /**
-   * Creates and an OG membership.
+   * Creates an OG membership.
    *
    * @param \Drupal\Core\Entity\EntityInterface $group
    *   The group entity.
@@ -290,7 +290,7 @@ class Og {
       throw new OgException(sprintf('Group content of entity type %s is new, and cannot be used for creating membership.', $entity_type_id));
     }
 
-    // Validate entities are "group" and "group content"
+    // Validate entities are "group" and "group content".
     if (!self::isGroup($group_entity_type_id, $group_bundle)) {
       throw new OgException(sprintf('Entity type %s with ID %s is not an OG group.', $group_entity_type_id, $group->id()));
     }
