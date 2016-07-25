@@ -196,6 +196,30 @@ class Og {
   }
 
   /**
+   * Returns the group membership for a given user and group.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $user
+   *   The user to get the membership for.
+   * @param \Drupal\Core\Entity\EntityInterface $group
+   *   The group to get the membership for.
+   * @param array $states
+   *   (optional) Array with the state to return. Defaults to active.
+   * @param string $field_name
+   *   (optional) The field name associated with the group.
+   *
+   * @return \Drupal\og\Entity\OgMembership|null
+   *   The OgMembership entity, or NULL if the user is not a member of the
+   *   group.
+   */
+  public static function getMembership(AccountInterface $user, EntityInterface $group, array $states = [OgMembershipInterface::STATE_ACTIVE], $field_name = NULL) {
+    foreach (static::getMemberships($user, $states, $field_name) as $membership) {
+      if ($membership->getGroupEntityType() === $group->getEntityTypeId() && $membership->getGroupId() === $group->id()) {
+        return $membership;
+      }
+    }
+  }
+
+  /**
    * Returns the group memberships a user is associated with.
    *
    * @param \Drupal\Core\Session\AccountInterface $user
@@ -248,27 +272,51 @@ class Og {
   }
 
   /**
-   * Returns the group membership for a given user and group.
+   * Creates and an OG membership.
    *
-   * @param \Drupal\Core\Session\AccountInterface $user
-   *   The user to get the membership for.
    * @param \Drupal\Core\Entity\EntityInterface $group
-   *   The group to get the membership for.
-   * @param array $states
-   *   (optional) Array with the state to return. Defaults to active.
-   * @param string $field_name
-   *   (optional) The field name associated with the group.
+   *   The group entity.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The group content entity.
+   * @param string $membership_type
+   *   (optional) The membership type. Defaults to OG_MEMBERSHIP_TYPE_DEFAULT.
    *
-   * @return \Drupal\og\Entity\OgMembership|null
-   *   The OgMembership entity, or NULL if the user is not a member of the
-   *   group.
+   * @return OgMembership
+   *   The unsaved membership object.
+   *
+   * @throws \Drupal\og\OgException
    */
-  public static function getMembership(AccountInterface $user, EntityInterface $group, array $states = [OgMembershipInterface::STATE_ACTIVE], $field_name = NULL) {
-    foreach (static::getMemberships($user, $states, $field_name) as $membership) {
-      if ($membership->getGroupEntityType() === $group->getEntityTypeId() && $membership->getGroupId() === $group->id()) {
-        return $membership;
-      }
+  public static function createMembership(EntityInterface $group, EntityInterface $entity, $membership_type = OG_MEMBERSHIP_TYPE_DEFAULT) {
+    $group_entity_type_id = $group->getEntityTypeId();
+    $group_bundle = $group->bundle();
+
+    $entity_type_id = $entity->getEntityTypeId();
+    $bundle = $entity->bundle();
+
+    if ($group->isNew()) {
+      throw new OgException(sprintf('Group of entity type %s is new, and cannot be used for creating membership.', $group_entity_type_id);
     }
+
+    if ($group->isNew()) {
+      throw new OgException(sprintf('Group content of entity type %s is new, and cannot be used for creating membership.', $entity_type_id);
+    }
+
+    // Validate entities are "group" and "group content"
+    if (!self::isGroup($group_entity_type_id, $group_bundle)) {
+      throw new OgException(sprintf('Entity type %s with ID %s is not an OG group.', $group_entity_type_id, $group->id());
+    }
+
+    if (!self::isGroupContent($entity_type_id, $bundle)) {
+      throw new OgException(sprintf('Entity type %s with ID %s is not a OG group content.', $group_entity_type_id, $group->id());
+    }
+
+    /** @var OgMembershipInterface $membership */
+    $membership = OgMembership::create(['type' => $membership_type]);
+    $membership
+      ->setEntity($entity)
+      ->setGroup($group);
+
+    return $membership;
   }
 
   /**
