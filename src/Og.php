@@ -9,6 +9,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\FieldStorageConfigInterface;
+use Drupal\og\Entity\OgMembership;
 
 /**
  * A static helper class for OG.
@@ -265,44 +266,37 @@ class Og {
    *
    * @param \Drupal\Core\Entity\EntityInterface $group
    *   The group entity.
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The group content entity.
+   * @param \Drupal\Core\Session\AccountInterface $user
+   *   The user object.
    * @param string $membership_type
    *   (optional) The membership type. Defaults to OG_MEMBERSHIP_TYPE_DEFAULT.
    *
-   * @return OgMembership
+   * @return \Drupal\og\Entity\OgMembership
    *   The unsaved membership object.
    *
    * @throws \Drupal\og\OgException
    */
-  public static function createMembership(EntityInterface $group, EntityInterface $entity, $membership_type = OG_MEMBERSHIP_TYPE_DEFAULT) {
+  public static function createMembership(EntityInterface $group, AccountInterface $user, $membership_type = OG_MEMBERSHIP_TYPE_DEFAULT) {
     $group_entity_type_id = $group->getEntityTypeId();
     $group_bundle = $group->bundle();
 
-    $entity_type_id = $entity->getEntityTypeId();
-    $bundle = $entity->bundle();
-
     if ($group->isNew()) {
-      throw new OgException(sprintf('Group of entity type %s is new, and cannot be used for creating membership.', $group_entity_type_id));
+      throw new OgException(sprintf('Group of entity type %s is not saved, and cannot be used for creating membership.', $group_entity_type_id));
     }
 
-    if ($group->isNew()) {
-      throw new OgException(sprintf('Group content of entity type %s is new, and cannot be used for creating membership.', $entity_type_id));
+    if ($user->isNew()) {
+      throw new OgException('User is not saved, and cannot be used for creating membership.');
     }
 
-    // Validate entities are "group" and "group content".
+    // Validate entity is a "group".
     if (!self::isGroup($group_entity_type_id, $group_bundle)) {
       throw new OgException(sprintf('Entity type %s with ID %s is not an OG group.', $group_entity_type_id, $group->id()));
-    }
-
-    if (!self::isGroupContent($entity_type_id, $bundle)) {
-      throw new OgException(sprintf('Entity type %s with ID %s is not a OG group content.', $group_entity_type_id, $group->id()));
     }
 
     /** @var OgMembershipInterface $membership */
     $membership = OgMembership::create(['type' => $membership_type]);
     $membership
-      ->setEntity($entity)
+      ->setUser($user)
       ->setGroup($group);
 
     return $membership;
