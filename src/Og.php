@@ -141,8 +141,6 @@ class Og {
    *   The user to get groups for.
    * @param array $states
    *   (optional) Array with the state to return. Defaults to active.
-   * @param string $field_name
-   *   (optional) The field name associated with the group.
    *
    * @return array
    *   An associative array, keyed by group entity type, each item an array of
@@ -150,11 +148,11 @@ class Og {
    *
    * @see \Drupal\og\Og::getGroupIds()
    */
-  public static function getUserGroupIds(AccountInterface $user, array $states = [OgMembershipInterface::STATE_ACTIVE], $field_name = NULL) {
+  public static function getUserGroupIds(AccountInterface $user, array $states = [OgMembershipInterface::STATE_ACTIVE]) {
     $group_ids = [];
 
     /** @var \Drupal\og\Entity\OgMembership[] $memberships */
-    $memberships = static::getMemberships($user, $states, $field_name);
+    $memberships = static::getMemberships($user, $states);
     foreach ($memberships as $membership) {
       $group_ids[$membership->getGroupEntityType()][] = $membership->getGroupId();
     }
@@ -175,8 +173,6 @@ class Og {
    *   The user to get groups for.
    * @param array $states
    *   (optional) Array with the states to return. Defaults to active.
-   * @param string $field_name
-   *   (optional) The field name associated with the group.
    *
    * @return \Drupal\Core\Entity\EntityInterface[][]
    *   An associative array, keyed by group entity type, each item an array of
@@ -185,10 +181,10 @@ class Og {
    * @see \Drupal\og\Og::getGroups()
    * @see \Drupal\og\Og::getMemberships()
    */
-  public static function getUserGroups(AccountInterface $user, array $states = [OgMembershipInterface::STATE_ACTIVE], $field_name = NULL) {
+  public static function getUserGroups(AccountInterface $user, array $states = [OgMembershipInterface::STATE_ACTIVE]) {
     $groups = [];
 
-    foreach (static::getUserGroupIds($user, $states, $field_name) as $entity_type => $entity_ids) {
+    foreach (static::getUserGroupIds($user, $states) as $entity_type => $entity_ids) {
       $groups[$entity_type] = \Drupal::entityTypeManager()->getStorage($entity_type)->loadMultiple($entity_ids);
     }
 
@@ -226,13 +222,11 @@ class Og {
    *   The user to get groups for.
    * @param array $states
    *   (optional) Array with the state to return. Defaults to active.
-   * @param string $field_name
-   *   (optional) The field name associated with the group.
    *
    * @return \Drupal\og\Entity\OgMembership[]
    *   An array of OgMembership entities, keyed by ID.
    */
-  public static function getMemberships(AccountInterface $user, array $states = [OgMembershipInterface::STATE_ACTIVE], $field_name = NULL) {
+  public static function getMemberships(AccountInterface $user, array $states = [OgMembershipInterface::STATE_ACTIVE]) {
     // Get a string identifier of the states, so we can retrieve it from cache.
     sort($states);
     $states_identifier = implode('|', array_unique($states));
@@ -241,7 +235,6 @@ class Og {
       __METHOD__,
       $user->id(),
       $states_identifier,
-      $field_name,
     ];
     $identifier = implode(':', $identifier);
 
@@ -255,10 +248,6 @@ class Og {
 
     if ($states) {
       $query->condition('state', $states, 'IN');
-    }
-
-    if ($field_name) {
-      $query->condition('field_name', $field_name);
     }
 
     $results = $query->execute();
@@ -479,7 +468,7 @@ class Og {
 
     // Retrieve the fields which reference our entity type and bundle.
     $query = \Drupal::entityQuery('field_storage_config')
-      ->condition('type', OgGroupAudienceHelper::NON_USER_TO_GROUP_REFERENCE_FIELD_TYPE);
+      ->condition('type', OgGroupAudienceHelper::GROUP_REFERENCE);
 
     // Optionally filter group content entity types.
     if ($entity_types) {
