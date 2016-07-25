@@ -273,26 +273,8 @@ class Og {
    *
    * @return \Drupal\og\Entity\OgMembership
    *   The unsaved membership object.
-   *
-   * @throws \Drupal\og\OgException
    */
-  public static function createMembership(EntityInterface $group, AccountInterface $user, $membership_type = OG_MEMBERSHIP_TYPE_DEFAULT) {
-    $group_entity_type_id = $group->getEntityTypeId();
-    $group_bundle = $group->bundle();
-
-    if ($group->isNew()) {
-      throw new OgException(sprintf('Group of entity type %s is not saved, and cannot be used for creating membership.', $group_entity_type_id));
-    }
-
-    if ($user->isNew()) {
-      throw new OgException('User is not saved, and cannot be used for creating membership.');
-    }
-
-    // Validate entity is a "group".
-    if (!self::isGroup($group_entity_type_id, $group_bundle)) {
-      throw new OgException(sprintf('Entity type %s with ID %s is not an OG group.', $group_entity_type_id, $group->id()));
-    }
-
+  public static function createMembership(EntityInterface $group, AccountInterface $user, $membership_type = OgMembershipInterface::TYPE_DEFAULT) {
     /** @var OgMembershipInterface $membership */
     $membership = OgMembership::create(['type' => $membership_type]);
     $membership
