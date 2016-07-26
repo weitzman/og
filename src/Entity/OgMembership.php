@@ -77,15 +77,6 @@ class OgMembership extends ContentEntityBase implements OgMembershipInterface {
   /**
    * {@inheritdoc}
    */
-  public static function create(array $values = []) {
-    // Use the default membership type by default.
-    $values += ['type' => OgMembershipInterface::TYPE_DEFAULT];
-    return parent::create($values);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
@@ -330,6 +321,15 @@ class OgMembership extends ContentEntityBase implements OgMembershipInterface {
     \Drupal::service('og.access')->reset();
 
     return $result;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(array $values = []) {
+    // Use the default membership type by default.
+    $values += ['type' => OgMembershipInterface::TYPE_DEFAULT];
+    return parent::create($values);
   }
 
 }
