@@ -157,6 +157,4 @@ class OgMembershipTest extends KernelTestBase {
       ->save();
   }
 
-
-
 }
